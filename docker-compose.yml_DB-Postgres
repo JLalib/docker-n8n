@@ -1,4 +1,5 @@
 #Docker-compose con DB Postgres
+#Source: https://www.mdfaisal.com/blog/using-n8n-with-docker-compose
 version: '3'
 version: '3.8'
 
