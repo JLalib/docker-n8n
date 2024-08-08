@@ -1,4 +1,4 @@
-# docker-n8n
+# n8n
 n8n | Workflow automation tool
 
 ![173571060-9f2f6d7b-bac0-43b6-bdb2-001da9694058](https://github.com/user-attachments/assets/09821573-f5e1-446d-b7d9-5292c6d48750)
