@@ -10,10 +10,16 @@ docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n
 
 ### docker-compose
 
-Crear el volume
-
 Crear docker-compose.yml
 
 Levantar contenedor
+
+### Clonando repositorio
+
+git clone https://github.com/JLalib/docker-n8n.git n8n
+
+cd n8n
+
+docker compose up -d
 
 ![n8n-screenshot](https://github.com/user-attachments/assets/1c6932c2-33c9-47c2-b380-59f9be1b2b5d)
