@@ -22,4 +22,8 @@ cd n8n
 
 docker compose up -d
 
+## Vídeo tutorial en YouTube
+
+https://youtu.be/QlZ8ox77MoM
+
 ![n8n-screenshot](https://github.com/user-attachments/assets/1c6932c2-33c9-47c2-b380-59f9be1b2b5d)
