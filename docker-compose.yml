@@ -1,18 +1,21 @@
 services:
-    n8n:
-        stdin_open: true
-        tty: true
-        container_name: n8n
-        ports:
-            - 5678:5678
-        volumes:
-            - n8n_data:/home/node/.n8n
-        image: docker.n8n.io/n8nio/n8n
-        environment:
-            - N8N_SECURE_COOKIE=false #Disable SSL
-            - GENERIC_TIMEZONE=Europe/Madrid
-            - TZ=Europe/Madrid
+  n8n:
+    stdin_open: true
+    tty: true
+    container_name: n8n
+    ports:
+      - 5678:5678  # Puerto interno solo necesario para la comunicación interna entre contenedores
+    volumes:
+      - n8n_data:/home/node/.n8n  # Mantiene el volumen para persistir los datos
+    image: docker.n8n.io/n8nio/n8n
+    environment:
+      - N8N_SECURE_COOKIE=false  # Desactiva el SSL dentro de n8n porque Nginx lo maneja
+      - GENERIC_TIMEZONE=Europe/Madrid
+      - TZ=Europe/Madrid
+      - N8N_PROTOCOL=http  # Usamos HTTP porque Nginx se encargará del HTTPS
+      - N8N_EXTERNAL_URL=https://[dominio]  # Actualizamos con tu dominio de DuckDNS
+      - N8N_USE_EXTERNAL_URL=true  # Asegura que n8n use la URL externa configurada
 volumes:
-    n8n_data:
-        external: false
-        name: n8n_data
+  n8n_data:
+    external: false
+    name: n8n_data  # No se modifica el volumen de datos
