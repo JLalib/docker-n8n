@@ -1,0 +1,1040 @@
+{
+  "name": "Invoice_Extractor",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1rE6I5oWbzqVu6OgrV-lo6VYkNorLZwra",
+          "mode": "list",
+          "cachedResultName": "Invoices ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1rE6I5oWbzqVu6OgrV-lo6VYkNorLZwra"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "70a78566-15e7-4fbc-a426-c36a6094b845",
+      "name": "📁 Drive File Monitor",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        760
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "a0H1R45zFS4MeKDk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "bc33a79b-bf50-4e6e-9352-2780e36381b0",
+      "name": "⬇️ Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1760,
+        760
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "a0H1R45zFS4MeKDk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "pdf-check",
+                    "leftValue": "={{ $('📁 Drive File Monitor').item.json.mimeType }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "image-check",
+                    "leftValue": "={{ $('📁 Drive File Monitor').item.json.mimeType }}",
+                    "rightValue": "image/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4a200151-aa83-4c99-8717-7b5565f2f88b",
+      "name": "📂 File Type Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        2080,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "7d882cf8-f699-441d-bbde-114ac83efe93",
+      "name": "📄 PDF Text Extractor",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o"
+        },
+        "inputType": "base64",
+        "options": {}
+      },
+      "id": "bc840d16-b1e1-43f1-b2ab-b07c54571997",
+      "name": "🖼️ OpenAI Image OCR",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2420,
+        940
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "jJ43azhw4WsPfIMK",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "file-info",
+              "name": "file_name",
+              "value": "={{ $('📁 Drive File Monitor').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "file-size",
+              "name": "file_size",
+              "value": "={{ $('📁 Drive File Monitor').item.json.size }}",
+              "type": "number"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "value": "pdf_text",
+              "type": "string"
+            },
+            {
+              "id": "document-content",
+              "name": "document_content",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "processing-timestamp",
+              "name": "processing_timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a59f731f-349b-49cf-a322-cfc6302241ce",
+      "name": "📝 Prepare PDF Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2680,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "file-info",
+              "name": "file_name",
+              "value": "={{ $('📁 Drive File Monitor').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "file-size",
+              "name": "file_size",
+              "value": "={{ $('📁 Drive File Monitor').item.json.size }}",
+              "type": "number"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "value": "image_text",
+              "type": "string"
+            },
+            {
+              "id": "document-content",
+              "name": "document_content",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "processing-timestamp",
+              "name": "processing_timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7565b1fe-2dab-484d-9cea-6434c7b3bb8d",
+      "name": "🖼️ Prepare Image Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2680,
+        940
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e1a1448f-cdb9-45a7-b90e-bba69b85776e",
+      "name": "🔄 Merge Content",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        2940,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=📄 INVOICE DATA EXTRACTION TASK\n\n📋 **File Information:**\n- File Name: {{ $json.file_name }}\n- Content Type: {{ $json.content_type }}\n- File Size: {{ Math.round($json.file_size / 1024) }}KB\n- Processing Time: {{ $json.processing_timestamp }}\n\n📝 **Document Content to Analyze:**\n{{ $json.document_content }}\n\n🎯 **TASK:** Extract ALL invoice data from the above content and return structured JSON with complete information for business accounting purposes.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are InvoiceExtractorAI, a specialized enterprise-grade invoice processing system.\n\n🎯 **PRIMARY FUNCTION:** Extract structured invoice data from text content (from PDFs or OCR'd images).\n\n📊 **EXTRACTION REQUIREMENTS:**\nExtract ALL available information including:\n1. **Vendor Information** - Company name, address, phone, email, tax ID\n2. **Document Details** - Invoice number, date, due date, PO number, currency\n3. **Financial Data** - Subtotal, tax amount, total amount, payment terms\n4. **Customer Information** - Billing name and address\n5. **Line Items** - Description, quantity, unit price, line total for each item\n6. **Additional Data** - Notes, terms, shipping info\n\n🔍 **PROCESSING INSTRUCTIONS:**\n- Parse amounts as clean numbers (remove currency symbols)\n- Convert dates to YYYY-MM-DD format\n- Handle multiple currencies and languages\n- Calculate and verify mathematical accuracy\n- Provide confidence scores for data quality\n- Flag any missing critical information\n\n📤 **OUTPUT FORMAT:** Return only valid JSON with complete structured data ready for immediate business use."
+        }
+      },
+      "id": "4bdf9334-87c6-48a8-a2c5-d6e9edd96e3a",
+      "name": "🤖 AI Invoice Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        3280,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XNlywMQbwDE-o5wub4dqBqR30MCks0D5Zr-7AOTd9GI",
+          "mode": "list",
+          "cachedResultName": "Invoice_Extractions_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XNlywMQbwDE-o5wub4dqBqR30MCks0D5Zr-7AOTd9GI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XNlywMQbwDE-o5wub4dqBqR30MCks0D5Zr-7AOTd9GI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Processing_ID": "={{ $json.output.processing_info?.processing_id || 'PROC_' + Date.now() }}",
+            "Processing_Date": "={{ $json.output.processing_info?.processing_timestamp || new Date().toISOString() }}",
+            "File_Name": "={{ $('🔄 Merge Content').item.json.file_name }}",
+            "Content_Type": "={{ $('🔄 Merge Content').item.json.content_type }}",
+            "Invoice_Number": "={{ $json.output.document_details?.invoice_number }}",
+            "Invoice_Date": "={{ $json.output.document_details?.invoice_date }}",
+            "Due_Date": "={{ $json.output.document_details?.due_date }}",
+            "Vendor_Name": "={{ $json.output.vendor_information?.company_name }}",
+            "Vendor_Email": "={{ $json.output.vendor_information?.email }}",
+            "Vendor_Phone": "={{ $json.output.vendor_information?.phone }}",
+            "Currency": "={{ $json.output.document_details?.currency }}",
+            "Subtotal": "={{ $json.output.financial_summary?.subtotal }}",
+            "Tax_Amount": "={{ $json.output.financial_summary?.tax_amount }}",
+            "Total_Amount": "={{ $json.output.financial_summary?.total_amount }}",
+            "Customer_Name": "={{ $json.output.customer_information?.customer_name }}",
+            "Confidence_Score": "={{ $json.output.processing_info?.confidence_score }}",
+            "Data_Completeness": "={{ $json.output.processing_info?.data_completeness }}",
+            "Payment_Terms": "={{ $json.output.document_details?.payment_terms }}",
+            "Line_Items_Count": "={{ ($json.output.line_items || []).length }}",
+            "Status": "processed",
+            "Needs_Review": "={{ ($json.output.processing_info?.confidence_score || 0) < 0.8 ? 'Yes' : 'No' }}\n"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Processing_ID",
+              "displayName": "Processing_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Processing_Date",
+              "displayName": "Processing_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "File_Name",
+              "displayName": "File_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content_Type",
+              "displayName": "Content_Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice_Number",
+              "displayName": "Invoice_Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice_Date",
+              "displayName": "Invoice_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due_Date",
+              "displayName": "Due_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor_Name",
+              "displayName": "Vendor_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor_Email",
+              "displayName": "Vendor_Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor_Phone",
+              "displayName": "Vendor_Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subtotal",
+              "displayName": "Subtotal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tax_Amount",
+              "displayName": "Tax_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total_Amount",
+              "displayName": "Total_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer_Name",
+              "displayName": "Customer_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Confidence_Score",
+              "displayName": "Confidence_Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Data_Completeness",
+              "displayName": "Data_Completeness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment_Terms",
+              "displayName": "Payment_Terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Line_Items_Count",
+              "displayName": "Line_Items_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Needs_Review",
+              "displayName": "Needs_Review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0415bca2-c939-45d4-b936-4e6637ceaa0a",
+      "name": "💾 Store Invoice Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4100,
+        600
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "03CEMaGPaZ8zhwpp",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1XNlywMQbwDE-o5wub4dqBqR30MCks0D5Zr-7AOTd9GI",
+          "mode": "list",
+          "cachedResultName": "Invoice_Extractions_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XNlywMQbwDE-o5wub4dqBqR30MCks0D5Zr-7AOTd9GI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 492793613,
+          "mode": "list",
+          "cachedResultName": "Vendors",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XNlywMQbwDE-o5wub4dqBqR30MCks0D5Zr-7AOTd9GI/edit#gid=492793613"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Vendor_Name": "={{ $json.output.vendor_information?.company_name }}",
+            "Tax_ID": "={{ $json.output.vendor_information?.tax_id }}",
+            "Vendor_Phone": "={{ $json.output.vendor_information?.phone }}",
+            "Vendor_Address": "={{ $json.output.vendor_information?.address }}",
+            "Vendor_Email": "={{ $json.output.vendor_information?.email }}",
+            "Website": "={{ $json.output.vendor_information?.website }}",
+            "Last_Invoice_Date": "={{ $json.output.document_details?.invoice_date }}",
+            "Last_Amount": "={{ $json.output.financial_summary?.total_amount }}",
+            "Currency": "={{ $json.output.document_details?.currency }}",
+            "Last_Updated": "={{ $json.output.processing_info?.processing_timestamp || new Date().toISOString() }}"
+          },
+          "matchingColumns": [
+            "Vendor_Name"
+          ],
+          "schema": [
+            {
+              "id": "Vendor_Name",
+              "displayName": "Vendor_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Vendor_Email",
+              "displayName": "Vendor_Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Vendor_Phone",
+              "displayName": "Vendor_Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor_Address",
+              "displayName": "Vendor_Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tax_ID",
+              "displayName": "Tax_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Invoice_Date",
+              "displayName": "Last_Invoice_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Amount",
+              "displayName": "Last_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Updated",
+              "displayName": "Last_Updated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b90d6758-463a-4d7e-b75c-b348fdda3059",
+      "name": "🏢 Update Vendor Database",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4120,
+        1020
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "03CEMaGPaZ8zhwpp",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1232923238",
+        "text": "=🚀 **Invoice Processed Successfully!**\n\n📄 **{{ $('🔄 Merge Content').item.json.file_name }}**\n🏢 **{{ $json.output.vendor_information?.company_name || 'Vendor not detected' }}**\n💰 **{{ $json.output.document_details?.currency || '$' }} {{ $json.output.financial_summary?.total_amount || 'N/A' }}**\n📅 **{{ $json.output.document_details?.invoice_date || 'Date not detected' }}**\n\n✅ **High Quality** • {{ Math.round(($json.output.processing_info?.confidence_score || 0) * 100) }}% confidence\n\n💾 Stored in Google Sheets",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "f4ccd81e-b079-43a0-bb2a-eeb867ad0abf",
+      "name": "📱 Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4120,
+        820
+      ],
+      "webhookId": "c35d04b1-3fd2-44f6-b5a6-bbd19a89bead",
+      "credentials": {
+        "telegramApi": {
+          "id": "Cg9dM7bNcPpXNS5R",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        3500,
+        980
+      ],
+      "id": "6589dcfa-9701-45d4-9648-bad5fa3e69c8",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "content": "## File Monitor and Download\n",
+        "height": 420,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1500,
+        620
+      ],
+      "typeVersion": 1,
+      "id": "0cf25a07-4c04-4f2f-95d5-d6ab9eba5407",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Routing : Document or image",
+        "height": 360,
+        "width": 340,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1960,
+        640
+      ],
+      "typeVersion": 1,
+      "id": "e8d3308f-be67-4065-915e-2fedd52c8567",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Analyse and extract image content ",
+        "height": 280,
+        "width": 520,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2340,
+        860
+      ],
+      "typeVersion": 1,
+      "id": "8d62a09c-5fa7-4537-ad69-49de1374292e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Analyse and extract Docuemnt content ",
+        "height": 280,
+        "width": 520,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2340,
+        520
+      ],
+      "typeVersion": 1,
+      "id": "162ef1c6-6278-4dc2-aa7f-d19a5ecc1151",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.1
+        }
+      },
+      "id": "73cd2f9a-3396-4f85-ba57-3982f055209d",
+      "name": "GPT-4o Mini Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3180,
+        980
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "jJ43azhw4WsPfIMK",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "60f3a687-87fe-4b86-8461-bda5d207dfbc",
+      "name": "Calculator Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        3340,
+        980
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"processing_info\": {\n    \"processing_id\": \"PROC_123456789\",\n    \"confidence_score\": 0.95,\n    \"processing_timestamp\": \"2024-01-15T10:30:00Z\",\n    \"data_completeness\": \"complete\"\n  },\n  \"vendor_information\": {\n    \"company_name\": \"TechCorp Solutions Ltd\",\n    \"address\": \"123 Business Avenue, Tech City, TC 12345\",\n    \"phone\": \"+1-555-0123\",\n    \"email\": \"billing@techcorp.com\",\n    \"website\": \"www.techcorp.com\",\n    \"tax_id\": \"TAX123456789\"\n  },\n  \"document_details\": {\n    \"invoice_number\": \"INV-2024-001\",\n    \"invoice_date\": \"2024-01-15\",\n    \"due_date\": \"2024-02-15\",\n    \"po_number\": \"PO-2024-456\",\n    \"currency\": \"USD\",\n    \"payment_terms\": \"Net 30\",\n    \"reference_number\": \"REF-789\"\n  },\n  \"financial_summary\": {\n    \"subtotal\": 1000.00,\n    \"tax_rate\": 0.08,\n    \"tax_amount\": 80.00,\n    \"shipping_cost\": 25.00,\n    \"discount_amount\": 0.00,\n    \"total_amount\": 1105.00,\n    \"amount_due\": 1105.00\n  },\n  \"line_items\": [\n    {\n      \"line_number\": 1,\n      \"item_description\": \"Professional Software License\",\n      \"item_code\": \"SW-PRO-001\",\n      \"quantity\": 5,\n      \"unit_price\": 200.00,\n      \"line_total\": 1000.00,\n      \"tax_applicable\": true\n    }\n  ],\n  \"customer_information\": {\n    \"customer_name\": \"ABC Corporation\",\n    \"billing_address\": \"456 Client Street, Business Park, BP 67890\",\n    \"customer_id\": \"CUST_ABC_001\",\n    \"contact_person\": \"John Smith\"\n  },\n  \"additional_details\": {\n    \"shipping_address\": \"456 Client Street, Business Park, BP 67890\",\n    \"notes\": \"Thank you for your business\",\n    \"terms_conditions\": \"Payment due within 30 days\",\n    \"bank_details\": \"Account: 1234567890\"\n  }\n}"
+      },
+      "id": "85b75e44-f3c3-4499-8e57-8c9ba4db82a3",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        3640,
+        980
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Information Extractor and parser Agent ",
+        "height": 560,
+        "width": 700,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3100,
+        600
+      ],
+      "typeVersion": 1,
+      "id": "789773b3-c9df-4aec-ad80-1a205f0f860c",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "📁 Drive File Monitor": {
+      "main": [
+        [
+          {
+            "node": "⬇️ Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⬇️ Download File": {
+      "main": [
+        [
+          {
+            "node": "📂 File Type Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📂 File Type Router": {
+      "main": [
+        [
+          {
+            "node": "📄 PDF Text Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🖼️ OpenAI Image OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 PDF Text Extractor": {
+      "main": [
+        [
+          {
+            "node": "📝 Prepare PDF Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🖼️ OpenAI Image OCR": {
+      "main": [
+        [
+          {
+            "node": "🖼️ Prepare Image Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Prepare PDF Data": {
+      "main": [
+        [
+          {
+            "node": "🔄 Merge Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🖼️ Prepare Image Data": {
+      "main": [
+        [
+          {
+            "node": "🔄 Merge Content",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🔄 Merge Content": {
+      "main": [
+        [
+          {
+            "node": "🤖 AI Invoice Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 AI Invoice Agent": {
+      "main": [
+        [
+          {
+            "node": "💾 Store Invoice Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🏢 Update Vendor Database",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📱 Telegram Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖 AI Invoice Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Store Invoice Data": {
+      "main": [
+        []
+      ]
+    },
+    "GPT-4o Mini Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "🤖 AI Invoice Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖 AI Invoice Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "🤖 AI Invoice Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a01b279a-85ac-4b1b-ac5e-6b1608faf0ac",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cc8fbc6c0e10ac107523cabe2453f0b9216ff0ef0c1f112312039de381e2f175"
+  },
+  "id": "fpyE7eXLrFhAgug7",
+  "tags": []
+}

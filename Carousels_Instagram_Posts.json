@@ -1,0 +1,628 @@
+{
+  "name": "Carousels Instagram Posts",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "optimized-carousel",
+        "formTitle": "🎨 Optimized Carousel Generator",
+        "formDescription": "Generate consistent carousel content with 2-agent efficiency",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Topic/Subject",
+              "fieldType": "textInput",
+              "placeholder": "e.g., A2A Protocol, Digital Marketing",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Content Purpose",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Educational/Tutorial"
+                  },
+                  {
+                    "option": "Product Launch"
+                  },
+                  {
+                    "option": "Industry Insights"
+                  },
+                  {
+                    "option": "Tips & Best Practices"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Industry",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Technology/AI"
+                  },
+                  {
+                    "option": "Business/Marketing"
+                  },
+                  {
+                    "option": "Health/Fitness"
+                  },
+                  {
+                    "option": "Finance/Crypto"
+                  },
+                  {
+                    "option": "Education"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Target Audience",
+              "placeholder": "e.g., Developers, Business owners",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Brand Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Number of Slides",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "3 slides"
+                  },
+                  {
+                    "option": "4 slides"
+                  },
+                  {
+                    "option": "5 slides"
+                  },
+                  {
+                    "option": "6 slides"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Design Style",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Modern Minimal"
+                  },
+                  {
+                    "option": "Bold & Vibrant"
+                  },
+                  {
+                    "option": "Professional Corporate"
+                  },
+                  {
+                    "option": "Dark Theme"
+                  },
+                  {
+                    "option": "Creative & Playful"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Brand Colors (Optional)",
+              "placeholder": "#FF5733, #33A1FF"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ebd2b036-bbf9-4027-aed1-04a8427f1778",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        80
+      ],
+      "webhookId": "optimized-carousel"
+    },
+    {
+      "parameters": {
+        "jsCode": "const formData = $input.first().json;\n\nconst topic = formData['Topic/Subject'] || '';\nconst purpose = formData['Content Purpose'] || 'Educational/Tutorial';\nconst industry = formData['Industry'] || 'Technology/AI';\nconst audience = formData['Target Audience'] || 'General audience';\nconst brand = formData['Brand Name'] || 'Your Brand';\nconst slideCountRaw = formData['Number of Slides'] || '5 slides';\nconst slideCount = parseInt(slideCountRaw.split(' ')[0]) || 5;\nconst designStyle = formData['Design Style'] || 'Modern Minimal';\nconst brandColors = formData['Brand Colors (Optional)'] || '';\n\n// Parse brand colors or set defaults\nlet colorPalette = [];\nif (brandColors) {\n  colorPalette = brandColors.split(',').map(c => c.trim());\n} else {\n  const defaultColors = {\n    'Technology/AI': ['#667eea', '#764ba2'],\n    'Business/Marketing': ['#4facfe', '#00f2fe'],\n    'Health/Fitness': ['#a8edea', '#fed6e3'],\n    'Finance/Crypto': ['#667eea', '#764ba2'],\n    'Education': ['#ffecd2', '#fcb69f']\n  };\n  colorPalette = defaultColors[industry] || ['#667eea', '#764ba2'];\n}\n\nconst processedData = {\n  topic,\n  purpose,\n  industry,\n  audience,\n  brand,\n  slideCount,\n  designStyle,\n  colorPalette,\n  timestamp: new Date().toISOString(),\n  requestId: `carousel_${Date.now()}`\n};\n\nconsole.log('Form data processed for:', processedData.topic);\n\nreturn [{ json: processedData }];"
+      },
+      "id": "daa1f11b-4e4b-4d92-bded-f8b2a36ac1c6",
+      "name": "Process Form Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        40,
+        340
+      ],
+      "id": "f0ba9a8c-f716-4a80-afdc-6f4268dc9254",
+      "name": "SerpAPI Tool",
+      "credentials": {
+        "serpApi": {
+          "id": "RV7uy4j6c8AGccaI",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-3.5-sonnet",
+        "options": {
+          "maxTokens": 6000,
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        300
+      ],
+      "id": "795e6a60-f0f7-44a6-b8be-9334ffd2d68e",
+      "name": "Master Agent Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LX8VcZUBckotLjPE",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"researchSummary\": {\"type\": \"string\"},\n    \"narrativeArc\": {\"type\": \"string\"},\n    \"overallTheme\": {\"type\": \"string\"},\n    \"targetTone\": {\"type\": \"string\"},\n    \"slides\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"slideNumber\": {\"type\": \"number\"},\n          \"learningObjective\": {\"type\": \"string\"},\n          \"keyConcept\": {\"type\": \"string\"},\n          \"headline\": {\"type\": \"string\"},\n          \"subheadline\": {\"type\": \"string\"},\n          \"keyPoints\": {\n            \"type\": \"array\",\n            \"items\": {\"type\": \"string\"}\n          },\n          \"callToAction\": {\"type\": \"string\"},\n          \"narrativeConnection\": {\"type\": \"string\"},\n          \"transitionElement\": {\"type\": \"string\"},\n          \"visualElements\": {\n            \"type\": \"array\",\n            \"items\": {\"type\": \"string\"}\n          },\n          \"designSpecs\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"layoutType\": {\"type\": \"string\"},\n              \"backgroundStyle\": {\"type\": \"string\"},\n              \"iconStrategy\": {\"type\": \"string\"},\n              \"visualHierarchy\": {\"type\": \"string\"}\n            }\n          }\n        }\n      }\n    },\n    \"consistencyRules\": {\n      \"type\": \"array\",\n      \"items\": {\"type\": \"string\"}\n    },\n    \"keyInsights\": {\n      \"type\": \"array\",\n      \"items\": {\"type\": \"string\"}\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        300
+      ],
+      "id": "21e64e6c-485e-4738-aa1d-47ffd7d2a8e6",
+      "name": "Master Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split master output into individual slide contexts\nconst masterOutput = $('Research Content Agent').item.json.output;\nconst originalData = $('Process Form Data').item.json;\n\nif (!masterOutput?.slides) {\n  throw new Error('Missing slides data from master agent');\n}\n\nconst slides = masterOutput.slides;\n\n// Create optimized slide contexts with all necessary data\nconst slideContexts = slides.map((slide, index) => {\n  const slideNumber = index + 1;\n  \n  return {\n    // Slide identification\n    slideNumber,\n    totalSlides: slides.length,\n    isFirst: slideNumber === 1,\n    isLast: slideNumber === slides.length,\n    \n    // Slide content from master agent\n    slide: slide,\n    \n    // Master context for design agent\n    masterContext: {\n      researchSummary: masterOutput.researchSummary,\n      narrativeArc: masterOutput.narrativeArc,\n      overallTheme: masterOutput.overallTheme,\n      targetTone: masterOutput.targetTone,\n      consistencyRules: masterOutput.consistencyRules,\n      keyInsights: masterOutput.keyInsights\n    },\n    \n    // Original form data\n    originalData: originalData,\n    \n    // Processing metadata\n    requestId: originalData.requestId,\n    timestamp: new Date().toISOString()\n  };\n});\n\nconsole.log(`Created ${slideContexts.length} optimized slide contexts`);\n\nreturn slideContexts.map(context => ({ json: context }));"
+      },
+      "id": "c71eff49-6ee5-487c-ad8c-4af4b7420cbe",
+      "name": "Split Slides",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        340,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "94faf056-d0f6-4277-90a3-f9f9552e9340",
+      "name": "Process Slides",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        540,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-3.5-sonnet",
+        "options": {
+          "maxTokens": 4000,
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        740,
+        280
+      ],
+      "id": "eadeacb5-dab5-477c-a4fc-b021e7cd054e",
+      "name": "Design Specialist Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LX8VcZUBckotLjPE",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Visual Design Specialist creating the final design specifications and image prompt for slide {{ $json.slideNumber }}/{{ $json.totalSlides }}.\n\nSLIDE CONTENT:\n{{ JSON.stringify($json.slide) }}\n\nBRAND CONTEXT:\nBrand: {{ $json.originalData.brand }}\nStyle: {{ $json.originalData.designStyle }}\nColors: {{ $json.originalData.colorPalette.join(', ') }}\nIndustry: {{ $json.originalData.industry }}\nAudience: {{ $json.originalData.audience }}\n\nMASTER CONTEXT:\nTheme: {{ $json.masterContext.overallTheme }}\nTone: {{ $json.masterContext.targetTone }}\nNarrative: {{ $json.masterContext.narrativeArc }}\nKey Insights: {{ $json.masterContext.keyInsights.slice(0, 2).join(', ') }}\n\nDESIGN TASK:\nCreate comprehensive design specifications and generate the complete image prompt for {{ $json.originalData.designStyle }} style.\n\nSTYLE GUIDELINES - {{ $json.originalData.designStyle }}:\n{% if $json.originalData.designStyle == 'Modern Minimal' %}\nClean white backgrounds, minimal icons, sans-serif typography, subtle accent colors\n{% elif $json.originalData.designStyle == 'Bold & Vibrant' %}\nBright gradients, bold visuals, dynamic shapes, high contrast colors\n{% elif $json.originalData.designStyle == 'Professional Corporate' %}\nClean professional backgrounds, structured layouts, trust-building elements\n{% elif $json.originalData.designStyle == 'Dark Theme' %}\nDark backgrounds, light text, neon accents, modern tech aesthetic\n{% elif $json.originalData.designStyle == 'Creative & Playful' %}\nFun colorful backgrounds, playful icons, creative layouts, energetic elements\n{% endif %}\n\nSLIDE TYPE:\n{% if $json.isFirst %}\n🚀 COVER SLIDE: Maximum visual impact, scroll-stopping design\n{% elif $json.isLast %}\n🎯 CTA SLIDE: Action-focused, clear next steps\n{% else %}\n📖 CONTENT SLIDE: Information delivery through visuals\n{% endif %}\n\nCREATE:\n1. Enhanced design specifications (refine the basic designSpecs from content)\n2. Complete image prompt for GPT-Image-1 that includes:\n   - All slide content (headline, subheadline, key points)\n   - Complete design specifications\n   - Brand context and style guidelines\n   - Mobile optimization requirements\n   - Visual storytelling elements\n   - Slide type specific focus\n\nFocus on minimal text overlay and maximum visual impact.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a specialized visual design expert who creates detailed design specifications and comprehensive image prompts. You optimize for Instagram carousel format with minimal text and maximum visual storytelling."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        740,
+        80
+      ],
+      "id": "381c7d77-18e6-4575-8928-eee72e19c7be",
+      "name": "Design Specialist Agent"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"finalDesignSpecs\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"layoutType\": {\"type\": \"string\"},\n        \"backgroundStyle\": {\"type\": \"string\"},\n        \"iconStrategy\": {\"type\": \"string\"},\n        \"textPlacement\": {\"type\": \"string\"},\n        \"visualHierarchy\": {\"type\": \"string\"},\n        \"brandIntegration\": {\"type\": \"string\"},\n        \"mobileOptimization\": {\"type\": \"string\"}\n      }\n    },\n    \"completeImagePrompt\": {\"type\": \"string\"},\n    \"designRationale\": {\"type\": \"string\"}\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        940,
+        280
+      ],
+      "id": "caba9be7-2c2c-4d2e-ac2a-95d41135d8b9",
+      "name": "Design Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create final slide package with all data\nconst slideContext = $('Process Slides').item.json;\nconst designOutput = $('Design Specialist Agent').item.json.output;\n\nconst finalSlide = {\n  // Slide identification\n  slideNumber: slideContext.slideNumber,\n  totalSlides: slideContext.totalSlides,\n  \n  // Content from master agent\n  headline: slideContext.slide.headline,\n  subheadline: slideContext.slide.subheadline,\n  keyPoints: slideContext.slide.keyPoints || [],\n  callToAction: slideContext.slide.callToAction || '',\n  narrativeConnection: slideContext.slide.narrativeConnection,\n  transitionElement: slideContext.slide.transitionElement,\n  visualElements: slideContext.slide.visualElements || [],\n  \n  // Design specifications\n  designSpecs: designOutput.finalDesignSpecs,\n  designRationale: designOutput.designRationale,\n  \n  // Brand context\n  brand: slideContext.originalData.brand,\n  topic: slideContext.originalData.topic,\n  designStyle: slideContext.originalData.designStyle,\n  colorPalette: slideContext.originalData.colorPalette,\n  industry: slideContext.originalData.industry,\n  \n  // Complete image prompt from design specialist\n  imagePrompt: designOutput.completeImagePrompt,\n  \n  // File naming\n  fileName: `${slideContext.originalData.brand.replace(/\\s+/g, '_')}_${slideContext.originalData.topic.replace(/\\s+/g, '_')}_Slide_${slideContext.slideNumber}`,\n  \n  // Metadata\n  requestId: slideContext.requestId,\n  timestamp: new Date().toISOString(),\n  isFirst: slideContext.isFirst,\n  isLast: slideContext.isLast\n};\n\nconsole.log(`Optimized slide ${slideContext.slideNumber} package ready`);\n\nreturn [{ json: finalSlide }];"
+      },
+      "id": "7d5f9c39-d219-48ce-acb8-2bf3bb5f35dc",
+      "name": "Final Slide Package",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1140,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.imagePrompt }}"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            },
+            {
+              "name": "quality",
+              "value": "auto"
+            },
+            {
+              "name": "n",
+              "value": 1
+            }
+          ]
+        },
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "665f05d9-22cc-474e-af39-f17a06d83125",
+      "name": "Generate Image (GPT-Image-1)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        80
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "jJ43azhw4WsPfIMK",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json",
+        "options": {
+          "fileName": "={{ $('Final Slide Package').item.json.fileName }}.png"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        80
+      ],
+      "id": "3a0ed3a1-196e-4c10-a8a2-2edcb9617d46",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Final Slide Package').item.json.fileName }}.png",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1W5eLd9HAPWO_6TuTDW2MPMsQDknGrHoZ",
+          "mode": "list",
+          "cachedResultName": "Product Images ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1W5eLd9HAPWO_6TuTDW2MPMsQDknGrHoZ"
+        },
+        "options": {}
+      },
+      "id": "5b4591c9-25c5-4b62-8c12-225c9fa22fcd",
+      "name": "Save to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1740,
+        80
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "a0H1R45zFS4MeKDk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "id": "00d23968-8cca-47b2-8307-dbfecff729fa",
+      "name": "Rate Limiter",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1940,
+        80
+      ],
+      "webhookId": "rate-limit-optimized"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Master Content & Research Agent that handles research, content architecture, and narrative planning in one comprehensive workflow.\n\nPROJECT BRIEF:\nTopic: {{ $json.topic }}\nPurpose: {{ $json.purpose }}\nIndustry: {{ $json.industry }}\nAudience: {{ $json.audience }}\nBrand: {{ $json.brand }}\nSlides: {{ $json.slideCount }}\nDesign Style: {{ $json.designStyle }}\nColors: {{ $json.colorPalette.join(', ') }}\n\nCOMPREHENSIVE WORKFLOW:\n\n**PHASE 1: RESEARCH (Use SerpAPI)**\nSearch for:\n1. \"{{ $json.topic }}\" latest information 2024 2025\n2. \"{{ $json.topic }}\" {{ $json.industry }} examples best practices\n3. \"{{ $json.audience }}\" {{ $json.topic }} challenges solutions\n4. \"{{ $json.topic }}\" {{ $json.purpose }} successful examples\n\nGather: key concepts, trends, statistics, expert insights, practical examples\n\n**PHASE 2: CONTENT ARCHITECTURE**\nCreate sequential narrative outline:\n- Slide 1: Hook/Introduction (attention-grabbing opener)\n- Slides 2-{{ $json.slideCount - 1 }}: Progressive content (building knowledge step-by-step)\n- Slide {{ $json.slideCount }}: Conclusion/CTA (summary + action)\n\n**PHASE 3: SLIDE-BY-SLIDE GENERATION**\nFor each of the {{ $json.slideCount }} slides, create:\n- slideNumber\n- learningObjective (what user learns)\n- keyConcept (main message)\n- headline (max 4 words)\n- subheadline (max 8 words)\n- keyPoints (2-3 short bullet points)\n- callToAction (if applicable)\n- narrativeConnection (how it connects to previous slides)\n- transitionElement (bridge to next slide)\n- visualElements (suggested icons, graphics)\n- designSpecs (layout, background, visual hierarchy for {{ $json.designStyle }} style)\n\nENSURE NARRATIVE CONSISTENCY:\n- Each slide builds on previous knowledge\n- Consistent terminology throughout\n- Logical progression with smooth transitions\n- No concept introduced without foundation\n\nCONTENT OPTIMIZATION:\n- Minimal text overlay for mobile viewing\n- Visual storytelling approach\n- {{ $json.designStyle }} aesthetic alignment\n- {{ $json.audience }} engagement focus\n\nOutput complete carousel package with research insights, narrative flow, and all slide specifications.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a comprehensive content creation expert who handles research, architecture, and content generation efficiently. You ensure narrative consistency, visual optimization, and brand alignment while minimizing token usage through integrated processing."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -60,
+        80
+      ],
+      "id": "899cc8cf-6b08-49fa-8942-94a2aca30960",
+      "name": "Research Content Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Form Data": {
+      "main": [
+        [
+          {
+            "node": "Research Content Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Content Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Master Agent Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Content Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Master Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Research Content Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Slides": {
+      "main": [
+        [
+          {
+            "node": "Process Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Slides": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Design Specialist Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Design Specialist Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Design Specialist Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Design Specialist Agent": {
+      "main": [
+        [
+          {
+            "node": "Final Slide Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Design Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Design Specialist Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Slide Package": {
+      "main": [
+        [
+          {
+            "node": "Generate Image (GPT-Image-1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image (GPT-Image-1)": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Save to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Drive": {
+      "main": [
+        [
+          {
+            "node": "Rate Limiter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limiter": {
+      "main": [
+        [
+          {
+            "node": "Process Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Content Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "41f5c9f7-2f3f-4aca-aca4-6326c63832e8",
+  "meta": {
+    "instanceId": "cc8fbc6c0e10ac107523cabe2453f0b9216ff0ef0c1f112312039de381e2f175"
+  },
+  "id": "LT4PBa1O8GK3hnL5",
+  "tags": []
+}
