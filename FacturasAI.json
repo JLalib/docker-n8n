@@ -1,0 +1,452 @@
+{
+  "name": "Facturas",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "id": "8a1aa887-8d0b-4404-a683-ffcd3a28d20b",
+      "name": "Get the Image1",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        576,
+        80
+      ],
+      "webhookId": "8404b32c-14bd-428e-88a6-560755f0f7ba",
+      "typeVersion": 1.1,
+      "credentials": {
+        "telegramApi": {
+          "id": "QBbIDZFFeI4G5B8c",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Get the Image1').item.json.message.chat.id }}",
+        "text": "={{ $json.telegramMessage }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "3a86b0a7-ff99-446e-a3db-17571ac247f4",
+      "name": "Send Content for the Analyzed image1",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1472,
+        -16
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "152ed2f9-ed7c-42a1-8b92-a761d9e9aee1",
+      "credentials": {
+        "telegramApi": {
+          "id": "QBbIDZFFeI4G5B8c",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Por favor sube una imagen de factura...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "ade1e566-e66f-4ca5-a927-95799ca7cb5a",
+      "name": "Update Telegram Error Message1",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1248,
+        176
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "fd73ac2b-29fb-46e1-81eb-f3049f015e0a",
+      "credentials": {
+        "telegramApi": {
+          "id": "QBbIDZFFeI4G5B8c",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "d90759f6-6499-46f7-b39a-d4f2826dd242",
+      "name": "Wait1",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        1024,
+        176
+      ],
+      "webhookId": "d4d6fc13-d8ad-42b6-b4dd-e922b5534282",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "array",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": "",
+                    "id": "d648b865-1d20-4897-9b20-dac7dfcfa325"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "3fe3a96d-6ee9-4f12-a32c-f5f5b729e257",
+                    "operator": {
+                      "type": "array",
+                      "operation": "notExists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": ""
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Empty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a02874ad-8a2c-4522-855d-6415f8fe2913",
+      "name": "Switch ( image or not )1",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        800,
+        80
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Normalizador Universal de Facturas (Corregido) ---\n// Entrada: $input.first().json.content (string con un JSON de la IA)\n// Salida: Un objeto con los datos estructurados para Airtable y un mensaje para Telegram.\n\nconst rawContent = $input.first()?.json?.content ?? '{}';\nlet invoiceData = {};\n\ntry {\n  // Intenta parsear el contenido. La IA a veces devuelve el JSON con texto adicional.\n  const jsonMatch = rawContent.match(/\\{.*\\}/s);\n  if (!jsonMatch) throw new Error('No se encontró un JSON válido en la respuesta de la IA.');\n  invoiceData = JSON.parse(jsonMatch[0]);\n\n  // --- FUNCIÓN MEJORADA PARA CONVERTIR TEXTO A NÚMERO ---\n  const cleanAndParseFloat = (text) => {\n    if (typeof text !== 'string') return 0;\n    // Elimina todo lo que no sea un dígito o un punto decimal.\n    const cleanedText = text.replace(/[^0-9.]+/g, '');\n    const number = parseFloat(cleanedText);\n    return isNaN(number) ? 0 : number;\n  };\n\n  // Asigna 'N/A' (No aplica) a campos vacíos para consistencia\n  const fields = [\n    'emisor', 'cliente', 'id_fiscal_emisor', 'id_fiscal_cliente',\n    'numero_factura', 'fecha_emision', 'fecha_vencimiento', 'subtotal',\n    'impuestos', 'total', 'moneda', 'concepto'\n  ];\n\n  for (const field of fields) {\n    invoiceData[field] = invoiceData[field] || 'N/A';\n  }\n\n  // Convierte los montos usando la nueva función\n  const subtotalNum = cleanAndParseFloat(invoiceData.subtotal);\n  const impuestosNum = cleanAndParseFloat(invoiceData.impuestos);\n  const totalNum = cleanAndParseFloat(invoiceData.total);\n\n  // Prepara el mensaje para Telegram con formato de número correcto\n  const formatCurrency = (num) => new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);\n\n  const telegramMessage = `\n🧾 <b>Resumen de Factura</b>\n\n🏢 <b>Emisor:</b> ${invoiceData.emisor}\n👤 <b>Cliente:</b> ${invoiceData.cliente}\n\n🔢 <b>Factura #:</b> <code>${invoiceData.numero_factura}</code>\n📅 <b>Fecha:</b> ${invoiceData.fecha_emision}\n\n💰 <b>Subtotal:</b> ${formatCurrency(subtotalNum)} ${invoiceData.moneda}\n💸 <b>Impuestos:</b> ${formatCurrency(impuestosNum)} ${invoiceData.moneda}\n<b>✅ Total: ${formatCurrency(totalNum)} ${invoiceData.moneda}</b>\n\n📝 <b>Concepto:</b> ${invoiceData.concepto}\n  `.trim();\n\n  // Estructura el objeto final de salida con los números correctos\n  return [{\n    json: {\n      telegramMessage,\n      airtableData: {\n        fecha: invoiceData.fecha_emision,\n        emisor: invoiceData.emisor,\n        id_fiscal: invoiceData.id_fiscal_emisor,\n        ncf: invoiceData.numero_factura,\n        itbis: impuestosNum,\n        subtotal: subtotalNum,\n        total: totalNum,\n        concepto: invoiceData.concepto,\n        ocrCompleto: rawContent\n      }\n    }\n  }];\n\n} catch (e) {\n  // Manejo de errores\n  return [{\n    json: {\n      telegramMessage: `❌ <b>Error al procesar la factura:</b>\\n${e.message}`,\n      airtableData: {},\n      error: e.message,\n      originalContent: rawContent\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -16
+      ],
+      "id": "eb5e713f-4519-4dfd-9295-09ab7460370c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "Eres un experto en extracción de datos de facturas de cualquier país. Analiza la imagen y extrae la siguiente información en un formato JSON. Si un campo no está presente, usa \"N/A\". No incluyas explicaciones ni texto fuera del JSON.\n\nCampos a extraer:\n- emisor: El nombre o razón social de la empresa que emite la factura.\n- cliente: El nombre o razón social de la persona o empresa que recibe la factura.\n- id_fiscal_emisor: El número de identificación fiscal (VAT, RNC, CUIT, NIF, etc.) del emisor.\n- id_fiscal_cliente: El número de identificación fiscal del cliente.\n- numero_factura: El número o folio único de la factura.\n- fecha_emision: La fecha en que se emitió la factura.\n- fecha_vencimiento: La fecha límite de pago.\n- subtotal: El monto total antes de impuestos.\n- impuestos: La suma de todos los impuestos (IVA, ITBIS, VAT, etc.).\n- total: El monto final a pagar.\n- moneda: El símbolo o código de la moneda (ej. USD, EUR, $, RD$).\n- concepto: Una breve descripción de los productos o servicios.\n\nOUTPUT ÚNICO: un JSON válido.\n{\n  \"emisor\": \"...\",\n  \"cliente\": \"...\",\n  \"id_fiscal_emisor\": \"...\",\n  \"id_fiscal_cliente\": \"...\",\n  \"numero_factura\": \"...\",\n  \"fecha_emision\": \"...\",\n  \"fecha_vencimiento\": \"...\",\n  \"subtotal\": \"...\",\n  \"impuestos\": \"...\",\n  \"total\": \"...\",\n  \"moneda\": \"...\",\n  \"concepto\": \"...\"\n}",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1024,
+        -16
+      ],
+      "id": "b0805d8d-ec45-4ff7-b6c0-a53752c5060f",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "v3Z81Bzx4dkJRVhR",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appRfSmUgiU6KbRW0",
+          "mode": "list",
+          "cachedResultName": "Susana",
+          "cachedResultUrl": "https://airtable.com/appRfSmUgiU6KbRW0"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblNx2IZXqaf0YZZN",
+          "mode": "list",
+          "cachedResultName": "Facturas",
+          "cachedResultUrl": "https://airtable.com/appRfSmUgiU6KbRW0/tblNx2IZXqaf0YZZN"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha Emisión": "={{ $('Code').item.json.airtableData.fecha }}",
+            "NCF": "={{ $('Code').item.json.airtableData.ncf }}",
+            "ITBIS": "={{ $('Code').item.json.airtableData.itbis }}",
+            "ID Fiscal Emisor": "={{ $('Code').item.json.airtableData.id_fiscal }}",
+            "Emisor": "={{ $('Code').item.json.airtableData.emisor }}",
+            "Subtotal": "={{ $('Code').item.json.airtableData.subtotal }}",
+            "Total": "={{ $('Code').item.json.airtableData.total }}",
+            "Concepto": "={{ $('Code').item.json.airtableData.concepto }}",
+            "OCR Completo": "={{ $('Code').item.json.airtableData.ocrCompleto }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NCF",
+              "displayName": "NCF",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha Emisión",
+              "displayName": "Fecha Emisión",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Emisor",
+              "displayName": "Emisor",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID Fiscal Emisor",
+              "displayName": "ID Fiscal Emisor",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ITBIS",
+              "displayName": "ITBIS",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Subtotal",
+              "displayName": "Subtotal",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Concepto",
+              "displayName": "Concepto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "OCR Completo",
+              "displayName": "OCR Completo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Cliente",
+              "displayName": "Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1696,
+        -16
+      ],
+      "id": "f6028343-923e-4729-b07d-069888e4ab73",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "BeSd3jaOxscyWMDZ",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get the Image1": {
+      "main": [
+        [
+          {
+            "node": "Switch ( image or not )1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Update Telegram Error Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch ( image or not )1": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send Content for the Analyzed image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Content for the Analyzed image1": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26de0b69-8cd2-4fe0-857a-372b6c570935",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1ceda477b30c29c245a765d5cff047a778072c18500186e3714fc895a6a6152a"
+  },
+  "id": "SnIPqVAScDIiKVrX",
+  "tags": []
+}

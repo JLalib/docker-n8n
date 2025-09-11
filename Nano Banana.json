@@ -1,0 +1,1116 @@
+{
+  "name": "Nano Banana",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d7dd5b36-8915-4982-9620-46766669e750",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -16,
+        1776
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.images[0].url }}",
+        "options": {}
+      },
+      "id": "65af9d3c-84d5-4ee6-986a-ec50e1786c13",
+      "name": "Get File image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        208,
+        2176
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/nano-banana/requests/{{ $json.request_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "54160a3b-bf9c-4f11-8874-b9a50b26566e",
+      "name": "Get Url image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -16,
+        2176
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xZ2cOm3MFIuqAFy6",
+          "name": "twitterapi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/nano-banana/requests/{{ $('Create Image').item.json.request_id }}/status ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "7f917659-1f86-4ab3-8833-fb0780505b72",
+      "name": "Get status",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        224,
+        1936
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xZ2cOm3MFIuqAFy6",
+          "name": "twitterapi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Model\n![image](https://n3wstorage.b-cdn.net/n3witalia/model.jpg)",
+        "height": 540,
+        "width": 340,
+        "color": 6
+      },
+      "id": "22c999de-f716-4d3a-928e-66d1b36164e2",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        1168
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Product\n![image](https://n3wstorage.b-cdn.net/n3witalia/tshirt.jpg)",
+        "height": 540,
+        "width": 360,
+        "color": 6
+      },
+      "id": "79d13d81-db10-4ff0-8248-85256b877900",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        1168
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Result\n![image](https://n3wstorage.b-cdn.net/n3witalia/result_sport.jpeg)",
+        "height": 540,
+        "width": 340,
+        "color": 4
+      },
+      "id": "08e4dc6c-7659-4817-aa68-47cb1093a574",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        1168
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit?usp=drivesdk",
+          "cachedResultName": "AI Virtual TryOn for WooCommerce"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit#gid=0",
+          "cachedResultName": "Foglio1"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "IMAGE RESULT",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "id": "329a3217-83b3-4dc6-ba8e-b947b5bf8b71",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        208,
+        1776
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BABF9fd2GiPmlycd",
+          "name": "Google Sheets Cred"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "99a0f0e4-fb72-45ae-af68-f768868ba588",
+      "name": "Wait 60 sec.",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        32,
+        1936
+      ],
+      "webhookId": "351bd496-a9cc-445c-86f6-a56189df0028",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "383d112e-2cc6-4dd4-8985-f09ce0bd1781",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "COMPLETED"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ea797a83-c2fa-4e26-a331-355b69eea4b8",
+      "name": "Completed?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        400,
+        1936
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "name": "={{ $now.format('yyyyLLddHHmmss') }}-{{ $json.images[0].file_name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1aHRwLWyrqfzoVC8HoB-YMrBvQ4tLC-NZ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1aHRwLWyrqfzoVC8HoB-YMrBvQ4tLC-NZ",
+          "cachedResultName": "Fal.run"
+        },
+        "options": {}
+      },
+      "id": "1d610792-1f67-40ec-82d9-639fd303afe5",
+      "name": "Upload Image",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        416,
+        2176
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "nOHaczbgB6WGs3gg",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit?usp=drivesdk",
+          "cachedResultName": "AI Virtual TryOn for WooCommerce"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit#gid=0",
+          "cachedResultName": "Foglio1"
+        },
+        "columns": {
+          "value": {
+            "row_number": "={{ $('Loop Over Items').item.json.row_number }}",
+            "IMAGE RESULT": "={{ $('Get File image').item.json.images[0].url }}"
+          },
+          "schema": [
+            {
+              "id": "IMAGE MODEL",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "IMAGE MODEL",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IMAGE PRODUCT",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "IMAGE PRODUCT",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PRODUCT ID",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "PRODUCT ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IMAGE RESULT",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "IMAGE RESULT",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": true,
+              "required": false,
+              "displayName": "row_number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "row_number"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "95816f24-2484-4c4e-a269-3d89beb6cc2f",
+      "name": "Update result",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        656,
+        2176
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BABF9fd2GiPmlycd",
+          "name": "Google Sheets Cred"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c713d31f-9abd-496a-ac79-e8e2efe60aa0",
+              "name": "model",
+              "type": "string",
+              "value": "={{ $json['IMAGE MODEL'] }}"
+            },
+            {
+              "id": "58fb5e76-6576-4d16-8b25-b931c7935c01",
+              "name": "shirt",
+              "type": "string",
+              "value": "={{ $json['IMAGE PRODUCT'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "41012e83-89a9-4c5d-8c96-a03cec244d76",
+      "name": "Set data",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        688,
+        1792
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/nano-banana/edit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n     \"prompt\": \"make a photo of the model wearing the submitted clothing item and creating the themed background\",\n     \"image_urls\": [\n       \"{{ $json.model }}\",\n       \"{{ $json.shirt }}\"\n     ]\n   }",
+        "options": {}
+      },
+      "id": "5b155fda-429c-46d2-8768-47ec51d3d98e",
+      "name": "Create Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        928,
+        1792
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xZ2cOm3MFIuqAFy6",
+          "name": "twitterapi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a97217c8-fedd-4ec8-a7fb-4cd75674e4cf",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        416,
+        1776
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## Result\n![image](https://n3wstorage.b-cdn.net/n3witalia/result_sport.jpeg)",
+        "height": 540,
+        "width": 340,
+        "color": 4
+      },
+      "id": "213c41df-24db-4a9f-b0ee-1e64880dd88a",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        64,
+        2352
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "product",
+        "operation": "update",
+        "productId": "={{ $('Loop Over Items1').item.json['PRODUCT ID'] }}",
+        "updateFields": {},
+        "dimensionsUi": {},
+        "imagesUi": {
+          "imagesValues": [
+            {
+              "alt": "",
+              "src": "={{ $('Get File image1').item.json.images[0].url }}",
+              "name": ""
+            }
+          ]
+        },
+        "metadataUi": {}
+      },
+      "id": "9dc6ff3d-fdd5-457b-95d6-d8067ea766dd",
+      "name": "WooCommerce",
+      "type": "n8n-nodes-base.wooCommerce",
+      "position": [
+        4208,
+        4688
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 1 - GOOGLE SHEET\nCreate a [Google Sheet like this](https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit?usp=sharing).\n\nPlease insert:\n- in the \"IMAGE MODEL\" column the basic image of the model to dress\n- in the \"IMAGE PRODUCT\" column the image of the item of clothing to wear\n- in the \"PRODUCT ID\" column the ID of the product on your crm\n\nLeave the \"IMAGE RESULT\" column unfilled. It will be inserted by the system once the image has been created",
+        "height": 260,
+        "width": 740
+      },
+      "id": "25879129-2df0-4ee1-890e-48d4c7ee573a",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        2112
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 2 - GET API KEY (YOURAPIKEY)\nCreate an account [here](https://fal.ai/) and obtain API KEY.\nIn the node \"Create Image\" set \"Header Auth\" and set:\n- Name: \"Authorization\"\n- Value: \"Key YOURAPIKEY\"",
+        "height": 156,
+        "width": 740
+      },
+      "id": "4ddd1c86-4dae-41c0-8f15-5577dd461eb2",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        2416
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 3 - WOOCOMMERCE\n- Set WooCommerce API",
+        "height": 92,
+        "width": 740
+      },
+      "id": "e955183e-54d8-4293-8242-8bb663614b85",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2640,
+        4256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.images[0].url }}",
+        "options": {}
+      },
+      "id": "2300b26b-6b3b-459e-a100-46d3f7025d63",
+      "name": "Get File image1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3552,
+        4688
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/nano-banana/requests/{{ $json.request_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "1fdb9184-dc1b-41f0-99b0-92afd0ff4c9a",
+      "name": "Get Url image1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3328,
+        4688
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/nano-banana/requests/{{ $('Create Image1').item.json.request_id }}/status ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "86785cea-f352-4d36-9fd4-4922fee5e00e",
+      "name": "Get status1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3968,
+        4432
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit?usp=drivesdk",
+          "cachedResultName": "AI Virtual TryOn for WooCommerce"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit#gid=0",
+          "cachedResultName": "Foglio1"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "IMAGE RESULT",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "id": "852f6efb-d3d1-47c5-973d-e8b58df2a5d6",
+      "name": "Google Sheets1",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2848,
+        4416
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "a2d604a7-216f-4a37-919a-de49e5397c4d",
+      "name": "Wait 60 sec.1",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        3776,
+        4432
+      ],
+      "webhookId": "351bd496-a9cc-445c-86f6-a56189df0028",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "383d112e-2cc6-4dd4-8985-f09ce0bd1781",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "COMPLETED"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8212d18f-8b44-4d42-bd79-f7d649dedc16",
+      "name": "Completed?1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        4144,
+        4432
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "name": "={{ $now.format('yyyyLLddHHmmss') }}-{{ $json.images[0].file_name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1aHRwLWyrqfzoVC8HoB-YMrBvQ4tLC-NZ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1aHRwLWyrqfzoVC8HoB-YMrBvQ4tLC-NZ",
+          "cachedResultName": "Fal.run"
+        },
+        "options": {}
+      },
+      "id": "dbd3129e-1602-4ee5-bc3e-0379f5bd52ce",
+      "name": "Upload Image1",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        3760,
+        4688
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit?usp=drivesdk",
+          "cachedResultName": "AI Virtual TryOn for WooCommerce"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11ebWJvwwXHgvQld9kxywKQUvIoBw6xMa0g0BuIqHDxE/edit#gid=0",
+          "cachedResultName": "Foglio1"
+        },
+        "columns": {
+          "value": {
+            "row_number": "={{ $('Loop Over Items1').item.json.row_number }}",
+            "IMAGE RESULT": "={{ $('Get File image1').item.json.images[0].url }}"
+          },
+          "schema": [
+            {
+              "id": "IMAGE MODEL",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "IMAGE MODEL",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IMAGE PRODUCT",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "IMAGE PRODUCT",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PRODUCT ID",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "PRODUCT ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IMAGE RESULT",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "IMAGE RESULT",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": true,
+              "required": false,
+              "displayName": "row_number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "row_number"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9d051db8-b304-47ed-a1f4-4202cf608c70",
+      "name": "Update result1",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        4000,
+        4688
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c713d31f-9abd-496a-ac79-e8e2efe60aa0",
+              "name": "model",
+              "type": "string",
+              "value": "={{ $json['IMAGE MODEL'] }}"
+            },
+            {
+              "id": "58fb5e76-6576-4d16-8b25-b931c7935c01",
+              "name": "shirt",
+              "type": "string",
+              "value": "={{ $json['IMAGE PRODUCT'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c6b7aa53-407b-40f6-89fb-69752cf39528",
+      "name": "Set data1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        3328,
+        4432
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/nano-banana/edit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n     \"prompt\": \"make a photo of the model wearing the submitted clothing item and creating the themed background\",\n     \"image_urls\": [\n       \"{{ $json.model }}\",\n       \"{{ $json.shirt }}\"\n     ]\n   }",
+        "options": {}
+      },
+      "id": "c9bf66c8-7ef2-4689-b5cd-f6752df71bae",
+      "name": "Create Image1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3568,
+        4432
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "657e2906-7e7f-4553-91a0-970e10c04706",
+      "name": "Loop Over Items1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        3056,
+        4416
+      ],
+      "typeVersion": 3
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set data": {
+      "main": [
+        [
+          {
+            "node": "Create Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Completed?": {
+      "main": [
+        [
+          {
+            "node": "Get Url image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 sec.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get status": {
+      "main": [
+        [
+          {
+            "node": "Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Image": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 sec.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image": {
+      "main": [
+        [
+          {
+            "node": "Update result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 sec.": {
+      "main": [
+        [
+          {
+            "node": "Get status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Url image": {
+      "main": [
+        [
+          {
+            "node": "Get File image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update result": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File image": {
+      "main": [
+        [
+          {
+            "node": "Upload Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Set data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WooCommerce": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File image1": {
+      "main": [
+        [
+          {
+            "node": "Upload Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Url image1": {
+      "main": [
+        [
+          {
+            "node": "Get File image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get status1": {
+      "main": [
+        [
+          {
+            "node": "Completed?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 sec.1": {
+      "main": [
+        [
+          {
+            "node": "Get status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Completed?1": {
+      "main": [
+        [
+          {
+            "node": "Get Url image1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 sec.1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image1": {
+      "main": [
+        [
+          {
+            "node": "Update result1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update result1": {
+      "main": [
+        [
+          {
+            "node": "WooCommerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set data1": {
+      "main": [
+        [
+          {
+            "node": "Create Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Image1": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 sec.1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Set data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bf241a29-7496-451c-8ea1-b657887a443d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eae46237f0b03e1e21495b9d127d17ad71e5e7504c7d7b1084f9a3d34657c561"
+  },
+  "id": "lsLTFUU9Qnn54Mpt",
+  "tags": []
+}

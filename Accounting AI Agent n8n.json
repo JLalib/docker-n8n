@@ -1,0 +1,772 @@
+{
+  "name": "Accounting AI Agent n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1376,
+        336
+      ],
+      "id": "7ad49e3a-d7da-4c0d-bb46-6c15705ef005",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gC5tBV1b2itKkIZb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2480,
+        544
+      ],
+      "id": "1a58b759-bedc-48dd-aff2-3c9f109f4c63",
+      "name": "OpenRouter Chat Model"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mistralAi",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        48
+      ],
+      "id": "996aba4d-bf51-4987-9624-ad6898f18343",
+      "name": "Extract text"
+    },
+    {
+      "parameters": {
+        "inputText": "=Extracted Document: {{ $json.extractedText || ' ' }}\nEmail Subject: {{ $('Gmail Trigger').item.json.subject }}\nEmail Body: {{ $('Gmail Trigger').item.json.text }}\nfrom: {{ $('Gmail Trigger').item.json.from.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Transaction Email",
+              "description": "This is an email containing transaction details"
+            },
+            {
+              "category": "Other Email",
+              "description": "This is an email that doesn't contain transaction details"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        2544,
+        336
+      ],
+      "id": "e2aa798f-d233-4b49-afa6-473be49aba54",
+      "name": "Check for Transaction Email"
+    },
+    {
+      "parameters": {
+        "inputText": "=Extracted document: {{ $('Extract text').item.json.extractedText }}\nEmail Subject: {{ $('Gmail Trigger').item.json.subject }}\nEmail Body: {{ $('Gmail Trigger').item.json.text }}\nfrom: {{ $('Gmail Trigger').item.json.from.text }}\nChart of Accounts: {{ $json.data.toJsonString() }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Expense",
+              "description": "This is email containing an expense"
+            },
+            {
+              "category": "Income",
+              "description": "This is email containing an income"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "=### CONTEXT\nYou are a highly accurate text classification engine for an accounting system. Your sole purpose is to analyze a piece of text and determine if it represents money coming IN to the business ('Income') or money going OUT of the business ('Expense').\n\n### RULES\n1.  Analyze the text for keywords, sender, and context.\n2.  \"Income\" keywords include: \"Payment Received\", \"Sale Confirmation\", \"has paid you\", \"deposit\".\n3.  \"Expense\" keywords include: \"Invoice from\", \"Your receipt\", \"Your order\", \"bill\", \"subscription renewal\".\n4.  You MUST respond with a single word: `Income` or `Expense`. Do not add any other text.\n5. My company is Apex Digital Solutions so any invoice from this company is sent to a client and vice versa is expense\n\n### EXAMPLES\n\nText: \"Your invoice from Google for Google Workspace is ready.\"\nClassification: Expense\n\nText: \"Stripe: Payment of £150.00 from customer@email.com succeeded.\"\nClassification: Income\n\nText: \"Receipt for your purchase from Adobe Inc.\"\nClassification: Expense\n\nText: \"Good news! Your invoice #1024 has been paid.\"\nClassification: Income\n\nText: \"CloudScribe AI - Your subscription is scheduled for renewal.\"\nClassification: Expense"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        3312,
+        240
+      ],
+      "id": "2dc52363-7432-43a6-ae64-bd5995ae62b5",
+      "name": "Check if it’s revenue or expense"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3248,
+        448
+      ],
+      "id": "615fd42c-751e-4b0d-8190-707d56e3ef39",
+      "name": "OpenRouter Chat Model1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0",
+          "mode": "list",
+          "cachedResultName": "n8n Accounting Agent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "888533224",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2896,
+        240
+      ],
+      "id": "4dff9980-c906-4374-9007-df80823d9df1",
+      "name": "Read Chart of Accounts"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3104,
+        240
+      ],
+      "id": "8deaa906-e5a9-441b-9b5d-9aec423563df",
+      "name": "Aggregate Categories"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3776,
+        176
+      ],
+      "id": "228e122a-7e0c-46f8-8877-4f645e154f40",
+      "name": "OpenRouter Chat Model2"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"TransactionID\": \"California\",\n  \"Date\": \"Use this format DD/MM/YYYY\",\n  \"Description\": \"This is the transaction type\",\n  \"Amount\": \"California\",\n  \"Comment\": \"California\"\n\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3984,
+        176
+      ],
+      "id": "4b0f836a-bba7-48ec-9e28-efb327e633f7",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Chart of accounts:  {{ JSON.stringify($('Aggregate Categories').item.json.data) }}\nExtracted document: {{ $('Extract text').item.json.extractedText }}\nEmail Subject: {{ $('Gmail Trigger').item.json.subject }}\nEmail Body: {{ $('Gmail Trigger').item.json.text }}\nfrom: {{ $('Gmail Trigger').item.json.from.text }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a helpful expense assistant in charge of extracting key information from expense transactions. \n\n# Output in this format\n{\n\t\"TransactionID\": \"California\",\n  \"Date\": \"Use this format DD/MM/YYYY\",\n  \"Description\": \"This is the transaction type\",\n  \"Amount\": \"California\",\n  \"Comment\": \"California\"\n\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3808,
+        0
+      ],
+      "id": "7b0fce3b-2571-4f5d-9350-c97e5002c5b6",
+      "name": "Expense AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0",
+          "mode": "list",
+          "cachedResultName": "n8n Accounting Agent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Transactions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TransactionID": "={{ $('Expense AI Agent').item.json.output.TransactionID }}",
+            "Date": "={{ $('Expense AI Agent').item.json.output.Date }}",
+            "Description": "={{ $json.output.Comment }}",
+            "Type": "Expense",
+            "Amount ": "=-{{ $('Expense AI Agent').item.json.output.Amount }}",
+            "Invoice Link": "={{ $('Upload file').item.json.webViewLink }}",
+            "Category": "={{ $json.output.Description }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "TransactionID",
+              "displayName": "TransactionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Link",
+              "displayName": "Invoice Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount ",
+              "displayName": "Amount ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4192,
+        0
+      ],
+      "id": "a91d1b4c-5469-47ef-a722-8fe37dd8cf6b",
+      "name": "Add Expense to Transactions Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BABF9fd2GiPmlycd",
+          "name": "Google Sheets Cred"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "attachment_0",
+        "name": "attachment_0",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1840,
+        48
+      ],
+      "id": "31114ff9-f25c-444b-b739-cc02b1a29fde",
+      "name": "Upload file"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2048,
+        48
+      ],
+      "id": "46d9e6aa-4dfa-49d7-bb8c-41dbefe532e4",
+      "name": "Download file"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3792,
+        560
+      ],
+      "id": "e2e88092-3f88-4e27-bdae-4e8970fa8745",
+      "name": "OpenRouter Chat Model3"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"TransactionID\": \"California\",\n  \"Date\": \"Use this format DD/MM/YYYY\",\n  \"Description\": \"This is the transaction type\",\n  \"Amount\": \"California\",\n  \"Comment\": \"California\"\n\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4000,
+        560
+      ],
+      "id": "3deb3af6-8f1e-4dc1-bd1d-bf3b258b73a8",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Chart of accounts:  {{ JSON.stringify($('Aggregate Categories').item.json.data) }}\nExtracted document: {{ $('Extract text').item.json.extractedText }}\nEmail Subject: {{ $('Gmail Trigger').item.json.subject }}\nEmail Body: {{ $('Gmail Trigger').item.json.text }}\nfrom: {{ $('Gmail Trigger').item.json.from.text }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a helpful expense assistant in charge of extracting key information from income transactions. \n\n# Output in this format\n{\n\t\"TransactionID\": \"California\",\n  \"Date\": \"Use this format DD/MM/YYYY\",\n  \"Description\": \"This is the transaction type\",\n  \"Amount\": \"California\",\n  \"Comment\": \"California\"\n\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3824,
+        384
+      ],
+      "id": "99f39384-173c-4f12-8c98-b22ffd0fc658",
+      "name": "Income AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0",
+          "mode": "list",
+          "cachedResultName": "n8n Accounting Agent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Transactions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1blMSrOOz3fJBfP-YfsBnSuC0i60eEBXgoyEZ-URC0K0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TransactionID": "={{ $('Income AI Agent').item.json.output.TransactionID }}",
+            "Date": "={{ $('Income AI Agent').item.json.output.Date }}",
+            "Description": "={{ $json.output.Comment }}",
+            "Type": "Income",
+            "Amount ": "={{ $('Income AI Agent').item.json.output.Amount }}",
+            "Invoice Link": "={{ $('Upload file').item.json.webViewLink }}",
+            "Category": "={{ $('Income AI Agent').item.json.output.Description }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "TransactionID",
+              "displayName": "TransactionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Link",
+              "displayName": "Invoice Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount ",
+              "displayName": "Amount ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4208,
+        384
+      ],
+      "id": "6156adbc-507b-4030-a91a-13a489a38cc7",
+      "name": "Add Income to Transactions Sheet"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b17719ba-b4dc-46fd-ae1c-7f25dc178263",
+              "leftValue": "={{ $binary && Object.keys($binary).length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        336
+      ],
+      "id": "ae864a83-63e9-4d6e-b275-ffe7dbc8b81c",
+      "name": "If Email Contains Document"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "If Email Contains Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Check for Transaction Email",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract text": {
+      "main": [
+        [
+          {
+            "node": "Check for Transaction Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Transaction Email": {
+      "main": [
+        [
+          {
+            "node": "Read Chart of Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Check if it’s revenue or expense",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Chart of Accounts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Categories": {
+      "main": [
+        [
+          {
+            "node": "Check if it’s revenue or expense",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if it’s revenue or expense": {
+      "main": [
+        [
+          {
+            "node": "Expense AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Income AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Expense AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Expense AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expense AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Add Expense to Transactions Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Income AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Income AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Income AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Add Income to Transactions Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Email Contains Document": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check for Transaction Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7c73ed07-b44c-428d-9d34-38184f626f2d",
+  "meta": {
+    "instanceId": "eae46237f0b03e1e21495b9d127d17ad71e5e7504c7d7b1084f9a3d34657c561"
+  },
+  "id": "yDtyGHNzrjHkwq1S",
+  "tags": []
+}
