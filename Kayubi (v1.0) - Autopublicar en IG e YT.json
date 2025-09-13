@@ -1,0 +1,698 @@
+{
+  "name": "Autopublicar RRSS (video)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "autopublicacion-rrss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        0
+      ],
+      "id": "1a86e113-7412-4553-ad9f-84074e505135",
+      "name": "Airtable Webhook",
+      "webhookId": "e91cac4f-e58d-47c9-828e-b2efcb1260e5"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "=appLfJJMnP9Cahi5r",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblKsNHVXEJJ9ycT8",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appLfJJMnP9Cahi5r/tblKsNHVXEJJ9ycT8"
+        },
+        "id": "={{ $json.body.id.Record_ID }}",
+        "options": {
+          "downloadFields": [
+            "Video"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "ea24cc3a-85d6-4772-bdeb-65ecbfbbc7f9",
+      "name": "Get Record + Download",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dpBN66LrfaIknoCG",
+          "name": "Prueba Video Autopublicar (14/05)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Creas un pie de foto para un vídeo corto de Instagram sabiendo el transcript del mismo: [EJEMPLO DE UN TRANSCRIPT DE UN VIDEO TUYO]\n\nNo devuelves nada más que el pie de foto para copiar y pegar\n"
+            },
+            {
+              "content": "[EJEMPLO DEL PIE DE FOTO DE ESE TRANSCRIPT]",
+              "role": "assistant"
+            },
+            {
+              "content": "Bien, ahora para este transcript: [EJEMPLO DE OTRO TRANSCRIPT]"
+            },
+            {
+              "content": "[PIE DE FOTO DE ESE TRANSCRIPT]",
+              "role": "assistant"
+            },
+            {
+              "content": "=Bien, ahora crea otro pie de foto para este transcript: {{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        660,
+        0
+      ],
+      "id": "e8572dac-a9de-4129-a9c2-cf1f8a5c4d29",
+      "name": "Descripcion para IG y TT",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKszU0XdYb3enewr",
+          "name": "N8N (10/04/25)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "Video_0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        440,
+        0
+      ],
+      "id": "665a9b44-7bd5-4c3c-ba73-bc954301e1fb",
+      "name": "Transcript",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKszU0XdYb3enewr",
+          "name": "N8N (10/04/25)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Creas un pie de foto para un vídeo corto de Youtube Shorts sabiendo el transcript del mismo: [EJEMPLO DE UN TRANSCRIPT DE UNO DE TUS VIDEOS]\n\n\nNo devuelves nada más que el pie de foto para copiar y pegar\n\nNunca usas más de 90 caracteres.\n\nSiempre incluyes hashtags con sentido\n"
+            },
+            {
+              "content": "[PIE DE FOTO PARA ESE VIDEO]",
+              "role": "assistant"
+            },
+            {
+              "content": "=Bien! Ahora hazlo para un vídeo con este transcript: {{ $('Transcript').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        660,
+        260
+      ],
+      "id": "c8ce09c2-68da-4095-a1da-5af3ca7341ce",
+      "name": "Descripcion para YT",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKszU0XdYb3enewr",
+          "name": "N8N (10/04/25)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "=appLfJJMnP9Cahi5r",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblKsNHVXEJJ9ycT8",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appLfJJMnP9Cahi5r/tblKsNHVXEJJ9ycT8"
+        },
+        "id": "={{ $('Airtable Webhook').item.json.body.id.Record_ID }}",
+        "options": {
+          "downloadFields": [
+            "Video"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1080,
+        0
+      ],
+      "id": "0ea15096-1569-4a53-8820-69f48237ba63",
+      "name": "Recupera el video",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dpBN66LrfaIknoCG",
+          "name": "Prueba Video Autopublicar (14/05)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upload-post.com/api/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [api-key]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $('Descripcion para IG y TT').item.json.message.content }}"
+            },
+            {
+              "name": "user",
+              "value": "pruebas"
+            },
+            {
+              "name": "platform[]",
+              "value": "instagram"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "video",
+              "inputDataFieldName": "Video_0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1620,
+        -320
+      ],
+      "id": "5bf29bad-3b40-4a98-9281-a7d46465b3e3",
+      "name": "Subir Instagram"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Plataformas }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    },
+                    "id": "c6ef03db-19bb-4ece-ae4c-9ae08e3bed7a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dc90120c-d802-4f84-b96e-980018e4e511",
+                    "leftValue": "={{ $json.Plataformas }}",
+                    "rightValue": "youtube",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "933bdcdc-8bc7-4b37-ab88-f445c30ecddf",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Descripcion para YT').all().first().json.message.content }}",
+        "regionCode": "ES",
+        "categoryId": "27",
+        "binaryProperty": "Video_0",
+        "options": {
+          "privacyStatus": "private"
+        }
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        1620,
+        280
+      ],
+      "id": "abb71831-1f1c-4f4a-9a8c-9c68ecbe60d2",
+      "name": "Subir Youtube",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "dS3THo4s6zpcx8tc",
+          "name": "Prueba Video Autopublicar (14/05)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1880,
+        -20
+      ],
+      "id": "e9d4ce0a-bb57-4673-9f92-fe2f7f712510",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "content": "## Posibilidad de añadir más RRSS\nsiquiendo el método del vídeo\n",
+        "height": 980,
+        "width": 340,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        -440
+      ],
+      "id": "9348d20e-7002-4606-8b45-5b8e8f177462",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Sustituir con ejemplos propios\nCrea las descripciones para el pie de video, si haceis otras RRSS adaptar",
+        "height": 780,
+        "width": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        600,
+        -180
+      ],
+      "id": "d778f1f9-70b1-42d8-ab3d-a6a75999aeab",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appLfJJMnP9Cahi5r",
+          "mode": "list",
+          "cachedResultName": "Prueba Video Autopublicar",
+          "cachedResultUrl": "https://airtable.com/appLfJJMnP9Cahi5r"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblKsNHVXEJJ9ycT8",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appLfJJMnP9Cahi5r/tblKsNHVXEJJ9ycT8"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Record_ID": "={{ $('Airtable Webhook').all().first().json.body.id.Record_ID }}",
+            "Descripcion IG": "={{ $('Descripcion para IG y TT').all().first().json.message.content }}",
+            "Descripcion YT": "={{ $('Descripcion para YT').all().first().json.message.content }}",
+            "Seleccionar": "Subido",
+            "Fecha": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "Record_ID"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Descripcion YT",
+              "displayName": "Descripcion YT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Descripcion IG",
+              "displayName": "Descripcion IG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video",
+              "displayName": "Video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Plataformas",
+              "displayName": "Plataformas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "youtube",
+                  "value": "youtube"
+                },
+                {
+                  "name": "instagram",
+                  "value": "instagram"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Seleccionar",
+              "displayName": "Seleccionar",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Para Editar",
+                  "value": "Para Editar"
+                },
+                {
+                  "name": "Para Subir",
+                  "value": "Para Subir"
+                },
+                {
+                  "name": "Subido",
+                  "value": "Subido"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Record_ID",
+              "displayName": "Record_ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Video_ID",
+              "displayName": "Video_ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2100,
+        -20
+      ],
+      "id": "8e812703-7824-40b8-9321-dcc29c4d4178",
+      "name": "Actualiza el Record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dpBN66LrfaIknoCG",
+          "name": "Prueba Video Autopublicar (14/05)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Airtable Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Record + Download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Record + Download": {
+      "main": [
+        [
+          {
+            "node": "Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcript": {
+      "main": [
+        [
+          {
+            "node": "Descripcion para IG y TT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descripcion para IG y TT": {
+      "main": [
+        [
+          {
+            "node": "Descripcion para YT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descripcion para YT": {
+      "main": [
+        [
+          {
+            "node": "Recupera el video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recupera el video": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Subir Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Subir Youtube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir Youtube": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Subir Instagram": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Actualiza el Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "736696a7-a8bf-481d-8da9-4733b7eefed7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "161ef4ae33ce65770cbacc969b7a8a7dea7b6f882504adaad3ed796f23a9dcb7"
+  },
+  "id": "BCx9OjBVUU3RygdC",
+  "tags": []
+}

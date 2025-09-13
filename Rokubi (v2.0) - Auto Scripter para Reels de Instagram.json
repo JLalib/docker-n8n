@@ -1,0 +1,1566 @@
+{
+  "name": "Scripts Instagram v2 copy",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1640,
+        100
+      ],
+      "id": "d602c866-62c0-4955-b689-2a9d272859e9",
+      "name": "Transcript",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKszU0XdYb3enewr",
+          "name": "Generica (20/05/25)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.videoUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        100
+      ],
+      "id": "f78fe3f8-54e0-4c86-8c9e-61f76a8829b0",
+      "name": "Descarga Video"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/apify~instagram-post-scraper/run-sync-get-dataset-items",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [TU API KEY DE APIFY]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"resultsLimit\": 10,\n    \"skipPinnedPosts\": true,\n    \"username\": [\n        \"[CUENTA_IG 1]\",\n        \"[CUENTA_IG 2...]\",\n        \"[...]\",\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -380,
+        40
+      ],
+      "id": "e413d8fc-9e32-4da6-8af3-121c9aafe81e",
+      "name": "Apify - Extrae Vídeos"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un experto traduciendo textos de inglés a español castellano (de españa). Traduces siempre hablando en segunda persona del singular y sin usted, tratas de tú.",
+              "role": "system"
+            },
+            {
+              "content": "Traduces el transcript que te envío de inglés a español intentando mantener el tono y el estilo de el transcript original.\n\nSolo devuelves el transcript traducido, nada más."
+            },
+            {
+              "content": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -380,
+        -640
+      ],
+      "id": "e50e1f39-e455-4147-a448-34e6c4706d81",
+      "name": "Traduccion Transcript",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKszU0XdYb3enewr",
+          "name": "Generica (20/05/25)"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "n8n"
+            },
+            {
+              "name": "from",
+              "value": "={{ new Date(new Date().setDate(new Date().getDate() - 7)).format(\"yyyy-MM-dd\") }}"
+            },
+            {
+              "name": "sortBy",
+              "value": "popularity"
+            },
+            {
+              "name": "apiKey",
+              "value": "[TU API KEY]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -500
+      ],
+      "id": "d54d31b3-d69d-4208-bd03-1ae857d77987",
+      "name": "NEWS API (n8n)"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        -500
+      ],
+      "id": "832671d1-140c-4de5-b1a9-1dfcbdcac1c3",
+      "name": "5 mas populares"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "articles",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        940,
+        -500
+      ],
+      "id": "b95de351-505a-4d1e-bab3-fb2158614524",
+      "name": "Divide por articulo"
+    },
+    {
+      "parameters": {
+        "url": "=https://bing.com/news/search?q={{ encodeURIComponent(\"n8n\") }}&format=RSS",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -380,
+        -820
+      ],
+      "id": "d2dd1e2e-cc5d-41ed-8e4f-0eb93a82622e",
+      "name": "RSS Read",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5d15ddaf-6b9c-48e2-bc20-5d87e93c8b9d",
+              "leftValue": "={{ $json.isoDate }}",
+              "rightValue": "={{ new Date(new Date().setDate(new Date().getDate() - 3)).toISOString().split('T')[0] }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        -820
+      ],
+      "id": "d157d836-ab14-41d5-af81-94d171e32912",
+      "name": "Filter",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## PRUEBAS\n1. RSS + FILTER\n2. TRADUCTOR",
+        "height": 500,
+        "width": 500
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        -940
+      ],
+      "id": "db1a3fda-b0b0-46ac-abf5-db47aa54f6f4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un asistente inteligente encargado de crear scripts para reels virales en español [SOBRE LO QUE SEAN LOS REELS]",
+              "role": "system"
+            },
+            {
+              "content": "=Creas un script viral para grabar un reel en instagram.\n\nTe basas en la información de la noticia que te envío por mensaje.\n\nRecuperas toda la información relevante sobre la noticia (datos, fechas, nombres propios, nombres de apps) para hacer un script que contenga la mayor cantidad de información relevante posible sobre [LO QUE TRATE EL REEL: SI ES UNA NOTICIA, EL NICHO, ETC.]\n\nCon este Reel se debe poder sacar siempre alguna aplicación práctica, ya sea una [ESPECIFICAR COSAS QUE PUEDAN SE UTILES EN TU NICHO]\n\nLa estructura que sigues para crear el script: [LA ESTRUCTURA QUE TE FUNCIONE MEJOR: POR EJ, INTRODUCCIÓN DE UNA HERRAMIENTA + PASO A PASO DE CÓMO USARLA + EJEMPLOS LLAMATIVOS + CTA]\n\n[RESTRICCIONES. POR EJEMPLO: \"Nunca devuelves nada más que el script directo para leer a cámara.\"]"
+            },
+            {
+              "content": "=Crea un script para un reel basado en esta noticia: [NOTICIA DE EJEMPLO]"
+            },
+            {
+              "content": "=[RESULTADO DE EJEMPLO (SCRIPT BIEN HECHO BIEN HECHO QUE YA TE HAYA FUNCIONADO POR EJEMPLO)]",
+              "role": "assistant"
+            },
+            {
+              "content": "=Bien! Ahora crea otro script para un Reel basado en esta noticia: [NOTICIA DE EJEMPLO 2]"
+            },
+            {
+              "content": "[RESULTADO DE EJEMPLO 2 (SCRIPT BIEN HECHO BIEN HECHO QUE YA TE HAYA FUNCIONADO POR EJEMPLO)]",
+              "role": "assistant"
+            },
+            {
+              "content": "=Bien! Ahora crea otro script para un Reel basado en esta noticia: {{ $json.title }}: {{ $json.content }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {
+          "temperature": 0.8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1840,
+        -500
+      ],
+      "id": "5b20b2d1-7412-434d-afa6-418ef20c9ae2",
+      "name": "News -> Reel",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKszU0XdYb3enewr",
+          "name": "Generica (20/05/25)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c53536a-630d-4103-966d-bc8152bdac59",
+              "leftValue": "={{ $json.timestamp }}",
+              "rightValue": "={{ new Date(new Date().setDate(new Date().getDate() - 10)).format(\"yyyy-MM-dd\") }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            },
+            {
+              "id": "a8163657-90dc-43e1-b3df-d5ec9fbb3c21",
+              "leftValue": "={{ $json.timestamp }}",
+              "rightValue": "={{ new Date(new Date().setDate(new Date().getDate() - 3)).format(\"yyyy-MM-dd\") }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "before"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -180,
+        40
+      ],
+      "id": "e5d402a9-6ecf-4267-a9f5-766d0bb11674",
+      "name": "Hace 3-10 dias"
+    },
+    {
+      "parameters": {
+        "jsCode": "items.sort((a,b) => b.json.videoPlayCount - a.json.videoPlayCount);\n\nreturn [items[0]];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -140
+      ],
+      "id": "49f13e28-218c-41b4-9f6d-c69bf6ebc389",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "items.sort((a,b) => b.json.videoPlayCount - a.json.videoPlayCount);\n\nreturn [items[0]];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        260
+      ],
+      "id": "bee1dadc-34e5-4e0c-814b-435d6a15a318",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "items.sort((a,b) => b.json.videoPlayCount - a.json.videoPlayCount);\n\nreturn [items[0]];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        60
+      ],
+      "id": "273e21f6-2379-48df-b965-e48f57cecef7",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $(\"Hace 3-10 dias\").item.json.ownerUsername || \"\"}}",
+                    "rightValue": "nathanhodgson.ai",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b1a6e547-2bde-4159-95ef-a705e118078d"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d5fc676d-41fb-4768-9e33-d45ee6088e27",
+                    "leftValue": "={{ $(\"Hace 3-10 dias\").item.json.ownerUsername || \"\"}}",
+                    "rightValue": "nick_saraev",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7378f578-706b-4de2-8ccf-8a6a87fad879",
+                    "leftValue": "={{ $(\"Hace 3-10 dias\").item.json.ownerUsername || \"\"}}",
+                    "rightValue": "eluna.ai",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "45269b69-37f5-4a82-9aae-96c7da83abcf",
+                    "leftValue": "={{ $(\"Hace 3-10 dias\").item.json.ownerUsername || \"\"}}",
+                    "rightValue": "lifewithleenor",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b7178781-8bed-4946-bef4-87dea6f6bdb2",
+                    "leftValue": "={{ $(\"Hace 3-10 dias\").item.json.ownerUsername || \"\"}}",
+                    "rightValue": "ai.volve.news",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        60,
+        40
+      ],
+      "id": "39ff46d5-edb6-4e5d-afe6-9da0de927bc0",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un asistente inteligente encargado de crear scripts para reels virales en español [SOBRE LO QUE SEAN LOS REELS]",
+              "role": "system"
+            },
+            {
+              "content": "=Creas un script viral para grabar un reel en instagram.\n\nTe basas en la información de la noticia que te envío por mensaje.\n\nRecuperas toda la información relevante sobre la noticia (datos, fechas, nombres propios, nombres de apps) para hacer un script que contenga la mayor cantidad de información relevante posible sobre [LO QUE TRATE EL REEL: SI ES UNA NOTICIA, EL NICHO, ETC.]\n\nCon este Reel se debe poder sacar siempre alguna aplicación práctica, ya sea una [ESPECIFICAR COSAS QUE PUEDAN SE UTILES EN TU NICHO]\n\nLa estructura que sigues para crear el script: [LA ESTRUCTURA QUE TE FUNCIONE MEJOR: POR EJ, INTRODUCCIÓN DE UNA HERRAMIENTA + PASO A PASO DE CÓMO USARLA + EJEMPLOS LLAMATIVOS + CTA]\n\n[RESTRICCIONES. POR EJEMPLO: \"Nunca devuelves nada más que el script directo para leer a cámara.\"]"
+            },
+            {
+              "content": "=Crea un script para un Reel basado en este transcript: [TRANSCRIPT DE EJEMPLO]"
+            },
+            {
+              "content": "=[RESPUESTA CORRECTA DE EJEMPLO (SCRIPT BIEN HECHO QUE TE HAYA FUNCIONADO)]",
+              "role": "assistant"
+            },
+            {
+              "content": "=Bien! Ahora crea otro script para un Reel basado en este transcript: {{ $json.text }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1860,
+        100
+      ],
+      "id": "b76eb180-1612-46fc-b8f8-e6ed4d27a38f",
+      "name": "Reel -> Reel",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKszU0XdYb3enewr",
+          "name": "Generica (20/05/25)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1100,
+        100
+      ],
+      "id": "6c267584-012d-4ee8-a10a-81b18598b120",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app6iGT8g3AyW058Q",
+          "mode": "list",
+          "cachedResultName": "Mario Kaizen",
+          "cachedResultUrl": "https://airtable.com/app6iGT8g3AyW058Q"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblzqYxUX04w91qvx",
+          "mode": "list",
+          "cachedResultName": "Verticales",
+          "cachedResultUrl": "https://airtable.com/app6iGT8g3AyW058Q/tblzqYxUX04w91qvx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Visitas": 0,
+            "Likes": 0,
+            "Script": "={{ $json.choices[0].message.content }}",
+            "Transcript": "={{ $('5 mas populares').item.json.content }}",
+            "Fecha de Subida": "={{ $('5 mas populares').item.json.publishedAt }}",
+            "Duracion": 0,
+            "Fuente": "Noticias",
+            "Estado": "Para Grabar"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Descripcion",
+              "displayName": "Descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publicacion LDN",
+              "displayName": "Publicacion LDN",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "RAW",
+              "displayName": "RAW",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video",
+              "displayName": "Video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Plataforma",
+              "displayName": "Plataforma",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "linkedin",
+                  "value": "linkedin"
+                },
+                {
+                  "name": "tiktok",
+                  "value": "tiktok"
+                },
+                {
+                  "name": "instagram",
+                  "value": "instagram"
+                },
+                {
+                  "name": "youtube",
+                  "value": "youtube"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Visitas",
+              "displayName": "Visitas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Likes",
+              "displayName": "Likes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Record ID",
+              "displayName": "Record ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Subido y Pagado",
+                  "value": "Subido y Pagado"
+                },
+                {
+                  "name": "Subido",
+                  "value": "Subido"
+                },
+                {
+                  "name": "Para Subir",
+                  "value": "Para Subir"
+                },
+                {
+                  "name": "Para Editar",
+                  "value": "Para Editar"
+                },
+                {
+                  "name": "Para Grabar",
+                  "value": "Para Grabar"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de Subida",
+              "displayName": "Fecha de Subida",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID IG",
+              "displayName": "ID IG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID TT",
+              "displayName": "ID TT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID YT",
+              "displayName": "ID YT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID LKD",
+              "displayName": "ID LKD",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Musica",
+              "displayName": "Musica",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Script",
+              "displayName": "Script",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Hashtags",
+              "displayName": "Hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fuente",
+              "displayName": "Fuente",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Duracion",
+              "displayName": "Duracion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2240,
+        -500
+      ],
+      "id": "50103972-7d4e-4eb6-92ae-fc098b452a92",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "kEsoVqBmSZls69vz",
+          "name": "Airtable (12/05/2025)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app6iGT8g3AyW058Q",
+          "mode": "list",
+          "cachedResultName": "Mario Kaizen",
+          "cachedResultUrl": "https://airtable.com/app6iGT8g3AyW058Q"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblzqYxUX04w91qvx",
+          "mode": "list",
+          "cachedResultName": "Publicar Verticales",
+          "cachedResultUrl": "https://airtable.com/app6iGT8g3AyW058Q/tblzqYxUX04w91qvx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Transcript": "={{ $('Transcript').item.json.text }}",
+            "Script": "={{ $json.choices[0].message.content }}",
+            "Hashtags": "={{ $('Descarga Video').item.json.hashtags }}",
+            "Fuente": "={{ $('Descarga Video').item.json.url }}",
+            "Duracion": "={{ $('Descarga Video').item.json.videoDuration }}",
+            "Visitas": "={{ $('Descarga Video').item.json.videoPlayCount }}",
+            "Likes": "={{ $('Descarga Video').item.json.likesCount }}",
+            "Fecha de Subida": "={{ $('Descarga Video').item.json.timestamp }}",
+            "Estado": "Para Grabar"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Descripcion",
+              "displayName": "Descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Publicacion LDN",
+              "displayName": "Publicacion LDN",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "RAW",
+              "displayName": "RAW",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video",
+              "displayName": "Video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Plataforma",
+              "displayName": "Plataforma",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [
+                {
+                  "name": "linkedin",
+                  "value": "linkedin"
+                },
+                {
+                  "name": "tiktok",
+                  "value": "tiktok"
+                },
+                {
+                  "name": "instagram",
+                  "value": "instagram"
+                },
+                {
+                  "name": "youtube",
+                  "value": "youtube"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Visitas",
+              "displayName": "Visitas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Likes",
+              "displayName": "Likes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Record ID",
+              "displayName": "Record ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Subido y Pagado",
+                  "value": "Subido y Pagado"
+                },
+                {
+                  "name": "Subido",
+                  "value": "Subido"
+                },
+                {
+                  "name": "Para Subir",
+                  "value": "Para Subir"
+                },
+                {
+                  "name": "Para Editar",
+                  "value": "Para Editar"
+                },
+                {
+                  "name": "Para Grabar",
+                  "value": "Para Grabar"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de Subida",
+              "displayName": "Fecha de Subida",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID IG",
+              "displayName": "ID IG",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID TT",
+              "displayName": "ID TT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID YT",
+              "displayName": "ID YT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID LKD",
+              "displayName": "ID LKD",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Musica",
+              "displayName": "Musica",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Script",
+              "displayName": "Script",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Hashtags",
+              "displayName": "Hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fuente",
+              "displayName": "Fuente",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Duracion",
+              "displayName": "Duracion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha Subida",
+              "displayName": "Fecha Subida",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2240,
+        100
+      ],
+      "id": "8bd6a606-a720-4356-878f-7d186158210a",
+      "name": "Airtable1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "kEsoVqBmSZls69vz",
+          "name": "Airtable (12/05/2025)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## NOTICIAS -> REEL\nCoge noticias recientes y las transfroma en un Script para una publicación de Instagram",
+        "height": 420,
+        "width": 1800,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -640
+      ],
+      "id": "d4233a30-1483-4318-96ad-d700932118e8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## COGE EL MAS VISTO",
+        "height": 1060,
+        "width": 180,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -240
+      ],
+      "id": "0f4af6d7-0233-420a-bdb0-2e31c57479ea",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## REEL -> REEL",
+        "height": 460,
+        "width": 1420,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        -40
+      ],
+      "id": "1b9faae3-b18f-4ded-b68f-5a8a1815157e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "#### Recupera publicaciones de ultimos 3-10 días",
+        "height": 240,
+        "width": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        -40
+      ],
+      "id": "ffd42229-7827-4e52-b83f-60355817e6e2",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                3
+              ],
+              "triggerAtHour": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -620,
+        40
+      ],
+      "id": "186746f4-fbf9-4f5f-b4de-9ff5ebfc6905",
+      "name": "1 vez / semana"
+    },
+    {
+      "parameters": {
+        "content": "## ...\n\nUno por cada cuenta \nde referencia en Apify"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        380,
+        500
+      ],
+      "id": "16f43c5e-e4a0-458e-bbbc-34ae83e90544",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Transcript": {
+      "main": [
+        [
+          {
+            "node": "Reel -> Reel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descarga Video": {
+      "main": [
+        [
+          {
+            "node": "Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify - Extrae Vídeos": {
+      "main": [
+        [
+          {
+            "node": "Hace 3-10 dias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traduccion Transcript": {
+      "main": [
+        []
+      ]
+    },
+    "NEWS API (n8n)": {
+      "main": [
+        [
+          {
+            "node": "Divide por articulo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divide por articulo": {
+      "main": [
+        [
+          {
+            "node": "5 mas populares",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 mas populares": {
+      "main": [
+        [
+          {
+            "node": "News -> Reel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hace 3-10 dias": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News -> Reel": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Descarga Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reel -> Reel": {
+      "main": [
+        [
+          {
+            "node": "Airtable1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1 vez / semana": {
+      "main": [
+        [
+          {
+            "node": "Apify - Extrae Vídeos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "NEWS API (n8n)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8016fe70-aa06-4a83-b2f9-7aaa8f76f0ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "161ef4ae33ce65770cbacc969b7a8a7dea7b6f882504adaad3ed796f23a9dcb7"
+  },
+  "id": "XFgPLz0EJlYi4xas",
+  "tags": [
+    {
+      "createdAt": "2025-05-22T22:18:41.938Z",
+      "updatedAt": "2025-05-22T22:18:41.938Z",
+      "id": "5lLBkDfZns3mkQlV",
+      "name": "MARIOKAIZEN CONTENIDO"
+    }
+  ]
+}
