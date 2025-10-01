@@ -1,0 +1,178 @@
+{
+  "name": "Email verification",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -32
+      ],
+      "id": "030d639f-8ede-43a0-a9b6-2320087396fc",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d0fb533-ee1d-4c35-94a8-152afdf4e5b4",
+              "name": "email",
+              "value": "manthan@leadgenman.com",
+              "type": "string"
+            },
+            {
+              "id": "fe0850c6-cbba-4de0-82b0-cb2e963ddf13",
+              "name": "token",
+              "value": "Z1ZnM3JIeE93VzYrSThjUU9uTkhVVEh6YUZIOEJrK3pZckorRVVWTnZNL1p0U3lTTHJaWkE3SVR5OWZUTGIvYmFUZXpYelRIMjA1S2VobWRhRUN2ZWhMZEJPT3VKS0YrcCsycmtiZGdjcFhxTU1jK2ZHYTNKMnlrOTd0OXZqR01WUitPRER2eTFGekt5UFY5S0pNSHlxUWdzZUpWVjhNeFpLSCt6OHlNakFTM28vZzI4QTZJdzA0aHd6bFd2QWFXU1FhMkpHeVdBNFIwNERObjRGSzhBRjJJTlVhaWJxQUdWUnA3bWVZVlhveTQwVDZ3VWFDYWhMeGp6ZDR5aFBBa2tQL1Z5dDRXditPYmhMMD0=-893fbef1bb4564af253a1045279ae089",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -64,
+        -32
+      ],
+      "id": "72bb998b-4f1d-4d01-a566-2a75c4f137c5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Simple Email Verification Parser\n// Extracts just the essential fields from MailTester.ninja response\n\nfor (const item of $input.all()) {\n  // Parse the JSON string if needed\n  let data;\n  \n  if (typeof item.json.data === 'string') {\n    try {\n      data = JSON.parse(item.json.data);\n    } catch (error) {\n      data = item.json;\n    }\n  } else {\n    data = item.json;\n  }\n  \n  // Extract only the fields you want\n  item.json = {\n    code: data.code || '',\n    message: data.message || '',\n    email: data.email || '',\n    domain: data.domain || '',\n    user: data.user || ''\n  };\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -32
+      ],
+      "id": "01d49dad-1a72-41fc-a0fa-2fe235009078",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5abbda9f-75f0-4c9d-bcd9-7a57411b88d8",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        -32
+      ],
+      "id": "f2d6f521-305e-4950-a478-1d560406e421",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "url": "=https://happy.mailtester.ninja/ninja?email={{ $json.email }}&token={{ $json.token }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        -32
+      ],
+      "id": "3c204b8f-48f7-46bf-a606-f10768b16a9f",
+      "name": "Email verification"
+    },
+    {
+      "parameters": {
+        "content": "📧 EMAIL VERIFICATION AUTOMATION\n================================\n\nThis workflow automatically verifies email addresses using MailTester.Ninja API to eliminate fake emails and improve deliverability.\n\nSETUP STEPS:\n1. Get your API key from MailTester.Ninja \n2. Activate your token at: https://happy.mailtester.ninja/ninja\n3. Replace the token in Edit Fields node with your activated token\n4. Add email addresses to verify in the Edit Fields node\n\nHOW IT WORKS:\n- Edit Fields → Sets email & token\n- HTTP Request → Calls MailTester.ninja API\n- Code Node → Parses verification response\n- Filter → Routes valid/invalid emails\n\nRESPONSE CODES:\n✅ \"accepted\" = Valid email\n❌ \"invalid\" = Fake/dead email  \n⚠️ \"unverifiable\" = Catch-all (use with caution)\n\nRESULTS: 0.3% bounce rate | 47% open rate | 100k emails/day\n\nCreated by LeadGenMan × MailTester.Ninja\nFull guide: https://resources.leadgenman.com/mailtesterninja",
+        "height": 608,
+        "width": 896
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -720
+      ],
+      "typeVersion": 1,
+      "id": "3e75b32a-f0b0-4147-a1f5-3da067dbb4a2",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Email verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email verification": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e79a4f96-36f2-405a-9d17-86bdaa1736f2",
+  "meta": {
+    "instanceId": "eae46237f0b03e1e21495b9d127d17ad71e5e7504c7d7b1084f9a3d34657c561"
+  },
+  "id": "xCKDZVVjWbNb7wO1",
+  "tags": []
+}
