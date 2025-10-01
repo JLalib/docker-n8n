@@ -1,0 +1,200 @@
+{
+  "name": "Tavus x n8n 2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "80d7aded-7a11-423d-b462-67f65fe2d0b5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        -16
+      ],
+      "id": "62fd2944-942f-4aa1-9daa-c44b80357094",
+      "name": "Wait",
+      "webhookId": "f50e24c1-da5a-44eb-a524-7649b9d96d62"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-tavus.tavus",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -16
+      ],
+      "id": "86838021-94fe-4e2a-8335-5d190098a7a7",
+      "name": "Get a video",
+      "credentials": {
+        "tavusApi": {
+          "id": "bKmVmVLWcD02hZmS",
+          "name": "Tavus account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TEC-BGAGVYamSN248wCNwKRZd-Rb-64ZfQwO2GKFNoU",
+          "mode": "list",
+          "cachedResultName": "Linkedin Job Scraping Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TEC-BGAGVYamSN248wCNwKRZd-Rb-64ZfQwO2GKFNoU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TEC-BGAGVYamSN248wCNwKRZd-Rb-64ZfQwO2GKFNoU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "7fc299cb-cc0f-4391-b71d-8d5163b43a50",
+      "name": "Leads Info",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BABF9fd2GiPmlycd",
+          "name": "Google Sheets Cred"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://server.smartlead.ai/api/v1/campaigns/1704516/leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"lead_list\": [\n    {\n      \"first_name\": $('Google Sheets2').item.json['first name'],\n      \"last_name\": $('Google Sheets2').item.json['last name'],\n      \"email\": $('Google Sheets2').item.json.Emails,\n      \"company_name\": $('Google Sheets2').item.json['company name'],\n      \"website\": $json.Website,\n      \"location\": $('Google Sheets2').item.json.country,\n      \"custom_fields\": {\n        \"video\": $json['Video Html'],\n        \"icebreaker\": $('Icebreakers').item.json.output\n      },\n      \"linkedin_profile\": $json['linkedin url'],\n      \"company_url\": $json.company_linkedin\n    }\n  ],\n  \"settings\": {\n    \"ignore_global_block_list\": true,\n    \"ignore_unsubscribe_list\": true,\n    \"ignore_duplicate_leads_in_other_campaign\": false\n  }\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -16
+      ],
+      "id": "39cdef6b-a982-455b-87b6-a049cf53b4e4",
+      "name": "Cold Email",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "z3WOAvrgczHRot8A",
+          "name": "Query Auth account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "replicaId": "r6ae5b6efc9d",
+        "script": "=Hiii {{ $json['First Name'] }},\n\nThank you for being customer for more than 2 years at Lead Gen Man. \n\nYour {{ $json.Title }} role is utmost valuable to us at {{ $json['Company Name'] }}.\n\nSo we are offering you 50% discount on your next plan.\n\nThank once again for being a valuable customer!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-tavus.tavus",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -16
+      ],
+      "id": "17e9288e-55f6-4543-a812-b0781fd3ca65",
+      "name": "Create a video1",
+      "credentials": {
+        "tavusApi": {
+          "id": "bKmVmVLWcD02hZmS",
+          "name": "Tavus account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Leads Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leads Info": {
+      "main": [
+        [
+          {
+            "node": "Create a video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a video": {
+      "main": [
+        [
+          {
+            "node": "Cold Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a video1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0520c637-9a06-4897-9ed2-fa8f4357aca7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eae46237f0b03e1e21495b9d127d17ad71e5e7504c7d7b1084f9a3d34657c561"
+  },
+  "id": "Bwi1dEMlMUTtRWE6",
+  "tags": []
+}
